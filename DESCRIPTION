@@ -1,0 +1,13 @@
+Package: EAPR
+Type: Package
+Title: What the Package Does (Title Case)
+Date: 2019
+Version: 0.1dev
+Author@R: c(person("Gregory", "Brownson", role=c("aut", "cre"), email="gregory.brownson@gmail.com"))
+Maintainer: Greg Brownson <gregory.brownson@gmail.com>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+Imports: data.table, lubridate, Rpostgres
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
