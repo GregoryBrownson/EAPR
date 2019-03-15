@@ -446,6 +446,8 @@ getAnnualCompustat <- function(conn, variables, from, to) {
 }
 
 getFundamentals <- function(comp, crsp, variables) {
+  cat("Calculating fundamentals...")
+  
   dict.comp <- c(BE  = "bookEquity",
                  OP  = "operatingProfitability",
                  INV = "investment")
@@ -509,4 +511,8 @@ getFundamentals <- function(comp, crsp, variables) {
   merged <- merged[keep]
 
   return(merged)
+}
+
+getTechnicals <- function(x) {
+  
 }
