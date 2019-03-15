@@ -2,3 +2,9 @@
 *.RData
 *.Rhistory
 *.Rbuildignore
+.Rproj.user
+
+proposal/*.tex
+proposal/*.gz
+proposal/*.log
+
