@@ -121,23 +121,35 @@
 
 \section*{Project Information}
 
-Project Title:
+Project Title: A New Package for Empirical Asset Pricing Research, or EAPR
 
-Project short title:
+Project short title: EAPR Package
 
-URL:
+URL: \href{https://github.com/GregoryBrownson/EAPR}{EAPR github}
+
+\section*{Project Summary}
+
+One of the major hurdles for Asset Pricing Research is the initial stages of gathering the data, sufficiently cleaning it, and then formatting it in a way that simplifies further analysis. This process, when done properly, takes much of a researchers time when it would be better spend on doing the actual analysis. By introducing a package that can almost automate this process, not only would the researchers time be saved, but we will have essentially standardized a significant portion of the asset pricing research process. We expect this last notion to effectively improve the reproducibility of research by academics and financial professionals. Furthermore, the EAPR package will make it more accessible for students to reproduce some of the classical papers in this subsection of financial academia (e.g. Fama and French's 1992 paper).
 
 \section*{Student Biography}
+I am an MSc student in the Computational Finance and Risk Management (CFRM) program housed under the Applied Mathematics Department at the University of Washington. Before this, I obtained my BS in Applied Mathematics, Computer Science, and Mathematical Economics from Hampden-Sydney College (2016).
+
+My research interests include Computational Finance, Financial Modeling, Quantitative Risk Management, and Statistical Finance. I was first introduced to R when I was researching various multi-factor asset pricing models as a research assistant at Hampden-Sydney. The ability to analyze data in a quick and organized fashion proved to be a powerful tool and I have since gravitated towards using R for any statistical analysis. Furthermore, I continue to gain substantial experience using R to implement solutions for projects and assignments in the CFRM program as well as additional financial analysis on the side. I have not only learned significantly more about various packages to do time series analysis, statistical regressions, optimization, etc. but also obtained the theoretical standing for the methods inside these packages. Last summer, I participated in GSoC while building a graphical user interface to the soon-to-be release \textbf{RobStatTM} package.
+
+While an undergrad, I was fortunate to obtain substantial programming experience in languages such as C, C++, and Python, where I took on several projects relating to graphics, CPU and GPU parallel programming, and building a basic C compiler. My programming skill set was strengthened while interning for the Codes and Methods team at AREVA.  Through this internship, I gained valuable experience in software development such as analysis, design, development, and testing. For example, one of my projects for the internship was to migrate legacy code to new high-performance computing cluster which required analysis of the code, fixing any errors, verifying calculations, and documentation of the entire process. Furthermore, I quickly understood the importance of following coding standards to produce maintainable code since the implementation of the legacy code was messy and debugging became an arduous process.
+
+As previously stated, one of my main motivations behind this project is to work with robust statistical methods on an almost daily basis over the summer. This project presents an excellent opportunity to learn these methods in addition to R package development under the guidance of Dr. Salibián-Barrera and Dr. Martin while showcasing my skills as a programmer. I am confident that I will be able to accomplish the project goals within the given timeline while also broadening my knowledge in R.
 
 \section*{Contact Information}
 
-Name:
+Name: Gregory Brownson \\
 
-Address:
-
-Phone: +1(434)221-6640
-
-Email: \href{mailto:gsb25@uw.edu}{gsb25@uw.edu}
+Address: \\
+4029 \( 7^{th} \) Ave NE \\
+Apt 311 \\
+Seattle, WA 98105 \\
+Phone: +1(434)221-6640 \\
+Email: \href{mailto:gsb25@uw.edu}{gsb25@uw.edu} \\
        \href{mailto:gregory.brownson@gmail.com}{gregory.brownson@gmail.com}
 
 \section*{Student Affiliation}
@@ -149,22 +161,28 @@ Program: M.S. in Computational Finance and Risk Management
 Stage of completion: 2nd Year
 
 Contact to verify:
+Tim Leung, \href{mailto:timleung@uw.edu}{timleung@uw.edu}
+
+Laurie Feldman, \href{mailto:lf23@uw.edu}{lf23@uw.edu}
 
 \section*{Schedule Conflicts}
 
+There will be a couple weeks of overlap between the official beginning of coding and the spring quarter, which will end on on June \( 14^{th} \). This crossover should not be an issue since some of the package is already implemented and I will continue to work on it throughout the quarter.
+
 \section*{Mentors}
 
-Name: Dr. Doug Martin
-
-Email: \href{mailto:martinrd3d@gmail.com}{martinrd3d@gmail.com}
-
-
+\begin{itemize}
+  \item Dr. Douglas Martin, Professor Emeritus, Department of Applied Mathematics and Statistics, University of Washington. Founder and former director    of the UW Computational Finance and Risk Management MS degree program. \\
+  \href{mailto:martinrd3d@gmail.com}{martinrd3d@gmail.com}
+\end{itemize}
 
 \section*{Coding Plan and Methods}
 
 \section*{Timeline}
 
 \section*{Management of Coding Project}
+%% Adjust this
+I will be meeting with one or more of the mentors every week or two to discuss design or implementation related issues and provide an update on my progress. The proposed Shiny application will be developed using GitHub as the development platform. This will allow for easier management of code, collaboration with mentors, daily builds and testing of code, etc. With guidance from mentors, a set plan may be prepared for the design and implementation of each functionality to be included in the next phase, ensuring all functionalities are accounted for and tested properly during the testing portion of each phase. Furthermore, collaborator feedback will be documented (possibly using GitHub’s issues tracker) so all criticisms of the design may be accounted for. At the end of each phase, the work will be reviewed by mentors during the review phase. Any feedback, e.g. failing test cases, should be documented so that they may be fixed in the next sprint.
 
 \section*{Current Progress}
 
