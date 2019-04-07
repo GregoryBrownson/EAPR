@@ -154,11 +154,13 @@ Email: \href{mailto:gsb25@uw.edu}{gsb25@uw.edu} \\
 
 \section*{Student Affiliation}
 
-Institution: University of Washington
+\textbf{Institution:} University of Washington
 
-Program: M.S. in Computational Finance and Risk Management
+\textbf{Program:} M.S. in Computational Finance and Risk Management
 
-Stage of completion: 2nd Year
+\textbf{Stage of completion:} 2nd Year
+
+\textbf{Expected Date of Graduation:} June 2019
 
 Contact to verify:
 Tim Leung, \href{mailto:timleung@uw.edu}{timleung@uw.edu}
@@ -176,13 +178,17 @@ There will be a couple weeks of overlap between the official beginning of coding
   \href{mailto:martinrd3d@gmail.com}{martinrd3d@gmail.com}
 \end{itemize}
 
+\subsection*{}
+
+
+
 \section*{Coding Plan and Methods}
 
 \section*{Timeline}
 
 \section*{Management of Coding Project}
 %% Adjust this
-I will be meeting with one or more of the mentors every week or two to discuss design or implementation related issues and provide an update on my progress. The proposed Shiny application will be developed using GitHub as the development platform. This will allow for easier management of code, collaboration with mentors, daily builds and testing of code, etc. With guidance from mentors, a set plan may be prepared for the design and implementation of each functionality to be included in the next phase, ensuring all functionalities are accounted for and tested properly during the testing portion of each phase. Furthermore, collaborator feedback will be documented (possibly using GitHub’s issues tracker) so all criticisms of the design may be accounted for. At the end of each phase, the work will be reviewed by mentors during the review phase. Any feedback, e.g. failing test cases, should be documented so that they may be fixed in the next sprint.
+Dr. Martin and I will be meeting on a weekly basis to discuss the current progress of the project and the goals for the next week. The package is being developed using GitHub as the development platform. This will allow for easier management of code, collaboration with others, daily builds and testing of code, etc. Any feedback, e.g. failing test cases, should be documented so that they may be fixed in the next sprint.
 
 \section*{Current Progress}
 

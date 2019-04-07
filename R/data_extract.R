@@ -37,7 +37,7 @@ cat("Extracting data...this could take a while")
   stopifnot(any(rebalance.freq %in% c('Q', 'S', 'A')))
 
 
-
+  # Adjust time frame
   if (rebalance.freq == 'A') {
     from <- max(ceiling_date(from %m-% months(6), "year") %m+% months(6), as.Date("1963-07-31"))
     to <- min(ceiling_date(to %m-% months(6), "year") %m+% months(6), as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")))
@@ -447,7 +447,7 @@ getAnnualCompustat <- function(conn, variables, from, to) {
 
 getFundamentals <- function(comp, crsp, variables) {
   cat("Calculating fundamentals...")
-  
+
   dict.comp <- c(BE  = "bookEquity",
                  OP  = "operatingProfitability",
                  INV = "investment")
@@ -514,5 +514,5 @@ getFundamentals <- function(comp, crsp, variables) {
 }
 
 getTechnicals <- function(x) {
-  
+
 }
