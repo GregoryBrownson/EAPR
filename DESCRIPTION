@@ -1,13 +1,13 @@
 Package: EAPR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Empirical Asset Pricing Research Platform
 Date: 2019
-Version: 0.1dev
+Version: 0.1
 Author@R: c(person("Gregory", "Brownson", role=c("aut", "cre"), email="gregory.brownson@gmail.com"))
 Maintainer: Greg Brownson <gregory.brownson@gmail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-Imports: data.table, lubridate, Rpostgres
+depends: data.table, lubridate, RPostgres
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

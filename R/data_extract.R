@@ -1,16 +1,47 @@
-library(bsts)
-library(chron)
-library(data.table)
-library(dplyr)
-library(lubridate)
-library(RPostgres)
-
 #' Access the WRDS database
 #'
+#' @import chron, data.table, dplyr, lubridate, RPostgres
+#'
+#' @importFrom datetimeutils end_of_month
+#' @importFrom lubridate ceiling_date months %m-% %m+%
+#' @importFrom RPostgres dbClearResults dbConnect dbFetch dbSendQuery Postgres
+#' 
+#' @method extract
+#' 
 #' This function accesses the WRDS database and returns
 #' @export
 
 # TODO: Add leverage ratios
+
+extract <- function(username,
+                    src = "wrds",
+                    variables      = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
+                    from           = as.Date("1963-07-31"),
+                    to             = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
+                    # filter         = 'none', # Options will be raw data, fama french, liquidity. May allow selection of multiple
+                    periodicity    = 'M', # Options will be D - daily, W - weekly, M - Monthly
+                    rebalance.freq = 'A', # Options will be A - annually, S - semiannually, Q - quarterly
+                    drop.excess    = T, # Boolean to drop extra variables extracted from WRDS database
+                    preceding      = 60,
+                    min.prec       = 0.4) {
+  if (src == "wrds") {
+    stop("Sorry, only extraction from the WRDS database is implemented right now. Please set the 'src' variable to 'wrds'")
+  }
+  
+  data <- do.call(paste('extract.', src, sep = ''),
+                        list(username = usernamee,
+                             variables = variables,
+                             from = from,
+                             to = to,
+                             #filter = filter,
+                             periodicity = periodicity,
+                             rebalance.freq = rebalance.freq,
+                             drop.excess = drop.excess,
+                             preceding = preceding,
+                             min.prec = min.prec))
+  
+  return(data)
+}
 
 extract.wrds <- function(username,
                          variables      = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
@@ -31,26 +62,29 @@ cat("Extracting data...this could take a while")
                     dbname  = 'wrds',
                     user    = username,
                     sslmode = 'require')
-
-  # TODO: Add more error checks
+  
+  valid.variables <- c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P")
+  
+  # Check for incorrect values
   stopifnot(any(periodicity %in% c('D', 'W', 'M')))
   stopifnot(any(rebalance.freq %in% c('Q', 'S', 'A')))
 
-
-  # Adjust time frame
+  # Adjust time frame based on rebalancing frequency
   if (rebalance.freq == 'A') {
     from <- max(ceiling_date(from %m-% months(6), "year") %m+% months(6), as.Date("1963-07-31"))
     to <- min(ceiling_date(to %m-% months(6), "year") %m+% months(6), as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")))
   } else if (rebalance.freq == 'S') {
-
+    # TODO: Adjusted time frame for Semiannual rebalancing
   } else {
-
+    # TODO: Adjusted time frame for Quarterly rebalancing 
   }
 
   if (periodicity == 'D') {
-    x <- getDailyData.WRDS(wrds, variables, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
+    # x <- getDailyData.WRDS(wrds, variables, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
+    x <- list()
   } else if (periodicity == 'W') {
-    x <- getWeeklyData.WRDS(wrds, variables, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
+    # x <- getWeeklyData.WRDS(wrds, variables, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
+    x <- list()
   } else {
     x <- getMonthlyData.WRDS(wrds, variables, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
   }
@@ -62,203 +96,20 @@ cat("Extracting data...this could take a while")
 }
 
 getDailyData.WRDS <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding) {
-#   x <- list()
-#
-#   if (any(c("BE/ME", "OP", "CF/P") %in% variables) & !("BE" %in% variables)) {
-#     variables <- c("BE", variables)
-#   }
-#
-#   dict.options.comp <- list(BE     = c("pstkrv", "pstkl", "txditc", "seq"),
-#                             OP     = c("ebitda", "xint AS interest_exp"),
-#                             INV    = c("act AS assets",
-#                                        "LAG(act, 1) as assets_prev OVER(PARTITION BY gvkey ORDER BY datadate)"),
-#                             "E/P"  = "ib AS earnings",
-#                             "CF/P" = c("act AS assets", "ib AS earnings", "txdc"))
-#
-#   options.comp <- unique(unlist(dict.options.comp[intersect(names(dict.options.comp), variables)]))
-#
-#   # Extract compustat data
-#   SQL.comp <- paste("SELECT gvkey, datadate AS date, at, pstkl, txditc, pstkrv, seq, pstk,
-#                             ib AS earnings, ebitda, xint AS interest_exp, act AS assets,
-#                             LAG(act, 1) OVER(PARTITION BY gvkey ORDER BY datadate) as assets_prev, txdc
-#                      FROM comp.funda
-#                      WHERE indfmt = 'INDL'
-#                      AND datafmt = 'STD'
-#                      AND popsrc = 'D'
-#                      AND consol = 'C'
-#                      AND datadate >=", paste0("'", year(from) - 1, "-12-31'"),
-#                     sep = " ")
-#
-#   res <- dbSendQuery(conn, SQL.comp)
-#   comp <- as.data.table(dbFetch(res))
-#   dbClearResult(res)
-#
-#   comp[, year := year(date)]
-#   comp[, date := LastDayInMonth(date)]
-#
-#   if (any(c("BE/ME", "CF/P") %in% variables) & !("ME" %in% variables)) {
-#     variables <- c("ME", variables)
-#   }
-#
-#   # Obtain list of variables to extract from database
-#   dict.options.crsp <- list(ME     = c("prc AS price", "shrout AS shares_out"),
-#                             "E/P"  = "prc AS price")
-#
-#   options.crsp <- unique(unlist(dict.options.crsp[intersect(names(dict.options.crsp), variables)]))
-#
-#   options.crsp <- sapply(options.crsp, function(str) { paste0("a.", str) }, USE.NAMES = F)
-#
-#   crsp.database <- ifelse(periodicity == 'M', 'crsp.msf', 'crsp.dsf')
-#
-#   crsp.names <- ifelse(periodicity == 'M', 'crsp.msenames', 'crsp.dsenames')
-#
-#   # Extract CRSP data
-#   SQL.crsp <- paste("SELECT a.permno, a.permco, a.date, b.shrcd AS share_code, b.exchcd AS exchange_code,
-#                      a.ret, a.retx, a.shrout AS shares_out, a.prc AS price, a.vol AS volume
-#                      FROM crsp.msfAS a
-#                      LEFT join crsp.msenames AS b
-#                      ON a.permno = b.permno
-#                      AND b.namedt <= a.date
-#                      AND a.date <= b.nameendt
-#                      WHERE a.date BETWEEN", paste0("'", from %m-% months(preceding), "'"),
-#                     "AND", paste0("'", to, "'"),
-#                     "AND b.exchcd BETWEEN 1 AND 3
-#                      AND a.hsiccd NOT between 6000 AND 6999",
-#                     sep = " ")
-#
-#   res <- dbSendQuery(conn, SQL.crsp)
-#   crsp <- data.table(dbFetch(res))
-#   dbClearResult(res)
-#
-#   if (periodicity == 'M') {
-#     crsp[, date := LastDayInMonth(date)]
-#   }
-#
-#   delret.database <- ifelse(periodicity == 'M', 'crsp.msedelist', 'crsp.dsedelist')
-#
-#   SQL.delret <- paste("SELECT permno, dlret AS delist_ret, dlstdt AS date
-#                        FROM", delret.database,
-#                       sep = " ")
-#
-#   res <- dbSendQuery(conn, SQL.delret)
-#   delret <- data.table(dbFetch(res))
-#   dbClearResult(res)
-#
-#   if (periodicity == 'M') {
-#     delret[, date := LastDayInMonth(date)]
-#   }
-#
-#   crsp <- merge(crsp, delret, on = c("permno", "date"), all.x = TRUE)
-#
-#   set(crsp, which(is.na(crsp[["delist_ret"]])), "delist_ret", 0)
-#
-#   # Calculate returns from delisting returns
-#   crsp[, adj_ret := (1 + ret) * (1 + delist_ret) - 1]
-#
-#   crsp[, adj_retx := (1 + retx) * (1 + delist_ret) - 1]
-#
-#   crsp[, delist_ret := NULL]
-#
-#   crsp <- crsp[order(date, permco)]
-#
-#   crsp[, offset_date := date %m-% months(6)]
-#   crsp[, period := year(offset_date)]
-#
-#   ret <- crsp[[c("date", "permno", "adj_ret", "adj_retx")]]
-#
-#   # Extract CCM data
-#   SQL.ccm <- paste("SELECT gvkey, lpermno AS permno, linktype, linkprim,
-#                     linkdt AS link_date, linkenddt AS link_end_date
-#                     FROM crsp.ccmxpf_linktable
-#                     WHERE substr(linktype, 1, 1)='L'
-#                     AND (linkprim ='C' OR linkprim='P')",
-#                    sep = " ")
-#
-#   res <- dbSendQuery(conn, SQL.ccm)
-#   ccm <- as.data.table(dbFetch(res))
-#   dbClearResult(res)
-#
-#   # Apply filter here
-#   if (filter) {
-#     do.call(filter, c(comp, crsp))
-#   }
-#
-#   set(ccm, which(is.na(ccm[["link_end_date"]])), "link_end_date", to)
-#
-#   comp <- merge(x = comp, y = ccm, by = "gvkey", all.x = TRUE, allow.cartesian = TRUE)
-#
-#   if (rebalance.freq == 'A') {
-#     comp[, rebalance_date := ceiling_date(date, "year") %m+% months(6) - days(1)]
-#     crsp[, end_period := ceiling_date(date %m-% months(6), "year") %m+% months(6)]
-#
-#   } else if (rebalance.freq == 'S') {
-#
-#   } else {
-#
-#   }
-#
-#
-#   comp <- comp[rebalance_date >= link_date & rebalance_date <= link_end_date,]
-#
-#   raw <- list(crsp = crsp, comp = comp)
-#
-#   z <- getFundamentals(comp, crsp, variables)
-#
-#   # Select daily or monthly database
-#   ind.database <- ifelse(periodicity == 'M', 'crsp.msi', 'crsp.dsi')
-#
-#   # Obtain returns for CRSP value-weighted index
-#   SQL.ind = paste("SELECT date, vwretd AS ind_ret
-#                    FROM", ind.database,
-#                   "WHERE date BETWEEN", paste0("'", from %m-% months(preceding + 1), "'"),
-#                   "AND", paste0("'", to, "'"),
-#                   sep = " ")
-#
-#   res <- dbSendQuery(conn, SQL.ind)
-#   ind <- as.data.table(dbFetch(res))
-#   dbClearResult(res)
-#
-#   if (periodicity == 'M') {
-#     ind[, date := LastDayInMonth(date)]
-#   }
-#
-#   SQL.rf <- if (periodicity == 'M') {
-#     paste("SELECT mcaldt AS date, tmyld AS risk_free
-#            FROM crsp.tfz_mth_rf2
-#            WHERE kytreasnox=2000061
-#            AND mcaldt BETWEEN", paste0("'", from %m-% months(preceding), "'"),
-#           "AND", paste0("'", to, "'"),
-#           sep = " ")
-#   } else {
-#     paste("SELECT caldt AS date, tmyld AS risk_free
-#            FROM crsp.tfz_dly_rf2
-#            WHERE kytreasnox=2000061
-#            AND caldt BETWEEN", paste0("'", from %m-% months(preceding), "'"),
-#           "AND", paste0("'", to, "'"),
-#           sep = " ")
-#   }
-#
-#   res <- dbSendQuery(conn, SQL.rf)
-#   rf <- as.data.table(dbFetch(res))
-#   dbClearResult(res)
-#
-#   if (periodicity == 'M') {
-#     rf[, date := LastDayInMonth(date)]
-#   }
-#
-#   market.dat <- merge(ind, rf, by = "date", all.x = TRUE)
+  # TODO: Method to extract daily data
 }
 
 getWeeklyData.WRDS <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding) {
-
+  # TODO: Method to extract weekly data
 }
 
 getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding) {
   x <- list()
 
-  if (filter == "ff") {
-    variables <- union(variables, c("BE", "ME", "BE/ME", "A/ME", "A/BE"))
-  }
+  # # Check filter
+  # if (filter == "ff") {
+  #   variables <- union(variables, c("BE", "ME", "BE/ME", "A/ME", "A/BE"))
+  # }
 
   if (any(c("BE/ME", "OP", "CF/P", "A/BE") %in% variables) & !("BE" %in% variables)) {
     variables <- c("BE", variables)
@@ -295,8 +146,9 @@ getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.fre
   crsp <- data.table(dbFetch(res))
   dbClearResult(res)
 
-  crsp[, date := LastDayInMonth(date)]
+  crsp[, date := end_of_month(date)]
 
+  # Extract delisted return
   SQL.delret <- "SELECT permno, dlret AS delist_ret, dlstdt AS date
                  FROM crsp.msedelist"
 
@@ -304,8 +156,10 @@ getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.fre
   delret <- data.table(dbFetch(res))
   dbClearResult(res)
 
-  delret[, date := LastDayInMonth(date)]
+  # Change date to end of month
+  delret[, date := end_month(date)]
 
+  # Merge crsp and delisted returns
   crsp <- merge(crsp, delret, on = c("permno", "date"), all.x = TRUE)
 
   set(crsp, which(is.na(crsp[["delist_ret"]])), "delist_ret", 0)
@@ -319,6 +173,8 @@ getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.fre
 
   crsp <- crsp[order(date, permco)]
 
+  # Calculate rebalancing dates and extract compustat data
+  # Note: Only extraction methods for annual compustat data are implemented
   if (rebalance.freq == 'A') {
     crsp[, rebalance_date := ceiling_date(date %m-% months(6), "year") %m+% months(6) - days(1)]
     comp <- getAnnualCompustat(conn, variables, from, to)
@@ -337,10 +193,14 @@ getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.fre
   #   crsp <- do.call(paste0("filter.", filter), crsp)
   # }
 
-  raw <- list(crsp = crsp, comp = comp)
+  # This line is for storing current data tables so further code can be tested without having to 
+  # query WRDS again
+  # raw <- list(crsp = crsp, comp = comp)
 
+  # Obtain fundamentals
   z <- getFundamentals(comp, crsp, variables)
 
+  # Get start and end dates for index time series
   from.ind <- paste0("'", from %m-% months(preceding + 1), "'")
   to.ind <- to.crsp
 
@@ -355,9 +215,11 @@ getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.fre
   ind <- as.data.table(dbFetch(res))
   dbClearResult(res)
 
-  ind[, date := LastDayInMonth(date)]
+  # Change dates to end of month and add lagged index variable
+  ind[, date := end_month(date)]
   ind[, lag_ind_ret := lag(ind_ret, 1)]
 
+  # Start and end dates for risk-free rate time series
   from.rf <- from.crsp
   to.rf <- to.crsp
 
@@ -371,25 +233,31 @@ getMonthlyData.WRDS <- function(conn, variables, from, to, filter, rebalance.fre
   rf <- as.data.table(dbFetch(res))
   dbClearResult(res)
 
-  rf[, date := LastDayInMonth(date)]
+  # Change date to end of month
+  rf[, date := end_month(date)]
 
+  # Merge index data and risk-free rates
   market.dt <- merge(ind[-1], rf, by = "date", all.x = TRUE)
 
-  x$market.dt <- merge(rets, market.dat, by = "date", all.x = TRUE)
+  # Merge individual stock returns with market data
+  x$market.dt <- merge(rets, market.dt, by = "date", all.x = TRUE)
 
   return(x)
 }
 
 # database name is compq, report date is RDQ
 getQuarterlyCompustat <- function(conn, variables, from, to) {
-
+  # TODO: Implement extraction for quarterly compustat data
 }
 
 getSemiAnnualCompustat <- function(conn, variables, from, to) {
-
+  # TODO: Implement extraction for semiannual computstat data
 }
 
+# Extracts annual compustat data
 getAnnualCompustat <- function(conn, variables, from, to) {
+  # Dictionary of variables which depend on Compustat data
+  # Note: May want to use hashtable if this list continues to grow
   dict.options.comp <- list(BE     = c("pstkrv", "pstkl", "txditc", "seq"),
                             OP     = c("ebitda", "xint AS interest_exp"),
                             INV    = c("at AS assets",
@@ -398,9 +266,12 @@ getAnnualCompustat <- function(conn, variables, from, to) {
                             "E/P"  = "ib AS earnings",
                             "CF/P" = c("at AS assets", "ib AS earnings", "txdc"))
 
+  # Obtain names of data which need to be extracted from Compustat
   options.comp <- paste(unique(unlist(dict.options.comp[intersect(names(dict.options.comp), variables)])), collapse = ', ')
 
+  # Compustat start date
   from.comp <- paste0("'", year(from) - 1, "-12-31'")
+  
   # Extract compustat data
   SQL.comp <- paste("SELECT gvkey, datadate AS date, at, pstkl, txditc, pstkrv, seq, pstk,
                             ib AS earnings, ebitda, xint AS interest_exp, at AS assets,
@@ -417,10 +288,11 @@ getAnnualCompustat <- function(conn, variables, from, to) {
   comp <- as.data.table(dbFetch(res))
   dbClearResult(res)
 
+  # Get year and change date to end of month
   comp[, year := year(date)]
-  comp[, date := LastDayInMonth(date)]
+  comp[, date := end_month(date)]
 
-  # Extract CCM data
+  # Extract CRSP-Compustat Merged data
   SQL.ccm <- paste("SELECT gvkey, lpermno AS permno, linktype, linkprim,
                     linkdt AS link_date, linkenddt AS link_end_date
                     FROM crsp.ccmxpf_linktable
@@ -434,17 +306,24 @@ getAnnualCompustat <- function(conn, variables, from, to) {
 
   today <- as.Date(format(Sys.Date(), "%Y-%m-%d"))
 
+  # Set link end dates which are 'NA' to today's date
   set(ccm, which(is.na(ccm[["link_end_date"]])), "link_end_date", today)
 
+  # Merge compustat and ccm by gvkey
   comp <- merge(x = comp, y = ccm, by = "gvkey", all.x = TRUE, allow.cartesian = TRUE)
 
+  # Calculate rebalance date for compustat data
   comp[, rebalance_date := ceiling_date(date, "year") %m+% months(6) - days(1)]
 
+  # Only keep data with rebalance dates between link start and end dates
   comp <- comp[rebalance_date >= link_date & rebalance_date <= link_end_date]
 
   return(comp)
 }
 
+source('R/data_fundamentals.R')
+
+# Calls on variable functions and returns a merged data table 
 getFundamentals <- function(comp, crsp, variables) {
   cat("Calculating fundamentals...")
 
@@ -514,5 +393,5 @@ getFundamentals <- function(comp, crsp, variables) {
 }
 
 getTechnicals <- function(x) {
-
+  # TODO: Implement method to call on functions to compute technical variables
 }

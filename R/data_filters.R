@@ -1,3 +1,5 @@
+#' Implementation of filter outlined in Fama and French (1992).
+#' @export
 filter.ff <- function(crsp) {
 
   crsp <- crsp %>%

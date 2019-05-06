@@ -1,3 +1,6 @@
+# Implementations of fundamental variable computations. These functions will be internal and should NOT be
+# exported.
+
 bookEquity <- function(dt) {
   # comp
   # Dependencies: pstkrv, pstkl, txditc, seq
