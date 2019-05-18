@@ -1,8 +1,11 @@
-#' Access the WRDS database
+#' Write operations for eapr
 #'
-#' This function accesses the WRDS database and returns
+#' This function exports an eapr object to a file
+#'
+#' @method write eapr
+#'
 #' @export
 
-eapr.write <- function(x) {
+write.eapr <- function(x) {
 
 }

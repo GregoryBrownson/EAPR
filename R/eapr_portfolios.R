@@ -1,4 +1,19 @@
-eapr.quantilePortfolio <- function(x, q, on, sort = "uni") {
+#' Quantile portfolio formation
+#'
+#' This function creates a univariate or bivariate quantile portfolio
+#'
+#' @param x an eapr object which contains the time series of variables for all
+#' stocks.
+#' @param q Either a vector of percentile cut points or the number of quantiles
+#' to compute. If the latter, quantiles are computed using evenly spaced percentile
+#' cut points.
+#'
+#' @export
+
+quantilePortfolio.eapr <- function(x, q, on, sort = "uni") {
+  # x should be eapr object
+  stopifnot(class(x) == "eapr")
+
   # Check if value for sort is valid
   valid.sorts <- c("uni", "bi.ind", "bi.dep")
   stopifnot(type %in% c(valid.sorts))
@@ -30,14 +45,14 @@ eapr.quantilePortfolio <- function(x, q, on, sort = "uni") {
   return(portfolio)
 }
 
-eapr.quartilePortfolio <- function(x, on, sort = "uni") {
+quartilePortfolio.eapr <- function(x, on, sort = "uni") {
   return(quantilePortfolio(x, 4, on, sort))
 }
 
-eapr.quintilePortfolio <- function(x, on, sort = "uni") {
+quintilePortfolio.eapr <- function(x, on, sort = "uni") {
   return(quantilePortfolio(x, 5, on, sort))
 }
 
-eapr.decilePortfolio <- function(x, on, sort = "uni") {
+decilePortfolio.eapr <- function(x, on, sort = "uni") {
   return(quantilePortfolio(x, 10, on, sort))
 }

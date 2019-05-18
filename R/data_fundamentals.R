@@ -1,6 +1,8 @@
 # Implementations of fundamental variable computations. These functions will be internal and should NOT be
 # exported.
 
+#' @importFrom data.table set ':='
+
 bookEquity <- function(dt) {
   # comp
   # Dependencies: pstkrv, pstkl, txditc, seq

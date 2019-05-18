@@ -1,0 +1,243 @@
+\documentclass[english]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[]{graphicx}
+\usepackage[]{color}
+% The line below tells R to use knitr on this.
+%\VignetteEngine{knitr::knitr_notangle}
+
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+%%\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+%%\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+%%\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+%%\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+%%\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+%%\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+%%\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+%%\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+%%\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+%%\newenvironment{kframe}{%
+%% \def\at@end@of@kframe{}%
+%%  \ifinner\ifhmode%
+%%   \def\at@end@of@kframe{\end{minipage}}%
+%%   \begin{minipage}{\columnwidth}%
+%%  \fi\fi%
+%%  \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+%%  \colorbox{shadecolor}{##1}\hskip-\fboxsep
+%%      % There is no \\@totalrightmargin, so:
+%%      \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+%%  \MakeFramed {\advance\hsize-\width
+%%    \@totalleftmargin\z@ \linewidth\hsize
+%%    \@setminipage}}%
+%%  {\par\unskip\endMakeFramed%
+%%  \at@end@of@kframe}
+%% \makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+%\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+\usepackage{babel}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage[unicode=true,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{pdftitle={RobStatTM Shiny User Interface}}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%%%%%%%%%%%%%%%%%%%% book.tex %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% sample root file for the chapters of your "monograph"
+%
+% Use this file as a template for your own input.
+%
+%%%%%%%%%%%%%%%% Springer-Verlag %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% RECOMMENDED %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% choose options for [] as required from the list
+% in the Reference Guide
+
+
+\usepackage[bottom]{footmisc}% places footnotes at page bottom
+
+% see the list of further useful packages
+% in the Reference Guide
+
+
+%\usepackage[style=authoryear,natbib=true,firstinits=true,backend=biber]{biblatex}
+%\addbibresource{C:/Rprojects/bookportopt/msybook.bib}
+
+%\renewcommand*{\nameyeardelim}{\addspace}
+%\renewbibmacro{in:}{}
+
+\usepackage{txfonts}
+\usepackage{upgreek}
+
+\makeatother
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+
+\title{Google Summer of Code (R-Stats): Proposal for EAPR Package}
+\author{Gregory Brownson}
+\maketitle
+
+\section*{Project Information}
+
+Project Title: A New Package for Empirical Asset Pricing Research, or EAPR
+
+Project short title: EAPR Package
+
+URL: \href{https://github.com/GregoryBrownson/EAPR}{EAPR github}
+
+\section*{Project Summary}
+
+One of the major hurdles for Asset Pricing Research is the initial stages of gathering the data, sufficiently cleaning it, and then formatting it in a way that simplifies further analysis. This process, when done properly, takes much of a researchers time when it would be better spend on doing the actual analysis. By introducing a package that can almost automate this process, not only would the researchers time be saved, but we will have essentially standardized a significant portion of the asset pricing research process. We expect this last notion to effectively improve the reproducibility of research by academics and financial professionals. Furthermore, the EAPR package will make it more accessible for students to reproduce some of the classical papers in this subsection of financial academia (e.g. Fama and French's 1992 paper).
+
+\section*{Student Biography}
+I am an MSc student in the Computational Finance and Risk Management (CFRM) program housed under the Applied Mathematics Department at the University of Washington. Before this, I obtained my BS in Applied Mathematics, Computer Science, and Mathematical Economics from Hampden-Sydney College (2016).
+
+My research interests include Computational Finance, Financial Modeling, Quantitative Risk Management, and Statistical Finance. I was first introduced to R when I was researching various multi-factor asset pricing models as a research assistant at Hampden-Sydney. The ability to analyze data in a quick and organized fashion proved to be a powerful tool and I have since gravitated towards using R for any statistical analysis. Furthermore, I continue to gain substantial experience using R to implement solutions for projects and assignments in the CFRM program as well as additional financial analysis on the side. I have not only learned significantly more about various packages to do time series analysis, statistical regressions, optimization, etc. but also obtained the theoretical standing for the methods inside these packages. Last summer, I participated in GSoC while building a graphical user interface to the soon-to-be release \textbf{RobStatTM} package.
+
+While an undergrad, I was fortunate to obtain substantial programming experience in languages such as C, C++, and Python, where I took on several projects relating to graphics, CPU and GPU parallel programming, and building a basic C compiler. My programming skill set was strengthened while interning for the Codes and Methods team at AREVA.  Through this internship, I gained valuable experience in software development such as analysis, design, development, and testing. For example, one of my projects for the internship was to migrate legacy code to new high-performance computing cluster which required analysis of the code, fixing any errors, verifying calculations, and documentation of the entire process. Furthermore, I quickly understood the importance of following coding standards to produce maintainable code since the implementation of the legacy code was messy and debugging became an arduous process.
+
+As previously stated, one of my main motivations behind this project is to work with robust statistical methods on an almost daily basis over the summer. This project presents an excellent opportunity to learn these methods in addition to R package development under the guidance of Dr. Salibián-Barrera and Dr. Martin while showcasing my skills as a programmer. I am confident that I will be able to accomplish the project goals within the given timeline while also broadening my knowledge in R.
+
+\section*{Contact Information}
+
+Name: Gregory Brownson \\
+
+Address: \\
+4029 \( 7^{th} \) Ave NE \\
+Apt 311 \\
+Seattle, WA 98105 \\
+Phone: +1(434)221-6640 \\
+Email: \href{mailto:gsb25@uw.edu}{gsb25@uw.edu} \\
+       \href{mailto:gregory.brownson@gmail.com}{gregory.brownson@gmail.com}
+
+\section*{Student Affiliation}
+
+\textbf{Institution:} University of Washington
+
+\textbf{Program:} M.S. in Computational Finance and Risk Management
+
+\textbf{Stage of completion:} 2nd Year
+
+\textbf{Expected Date of Graduation:} June 2019
+
+Contact to verify:
+Tim Leung, \href{mailto:timleung@uw.edu}{timleung@uw.edu}
+
+Laurie Feldman, \href{mailto:lf23@uw.edu}{lf23@uw.edu}
+
+\section*{Schedule Conflicts}
+
+There will be a couple weeks of overlap between the official beginning of coding and the spring quarter, which will end on on June \( 14^{th} \). This crossover should not be an issue since some of the package is already implemented and I will continue to work on it throughout the quarter.
+
+\section*{Mentors}
+
+\begin{itemize}
+  \item Dr. Douglas Martin, Professor Emeritus, Department of Applied Mathematics and Statistics, University of Washington. Founder and former director    of the UW Computational Finance and Risk Management MS degree program. \\
+  \href{mailto:martinrd3d@gmail.com}{martinrd3d@gmail.com}
+\end{itemize}
+
+\subsection*{}
+
+
+
+\section*{Coding Plan and Methods}
+
+\section*{Timeline}
+
+\section*{Management of Coding Project}
+%% Adjust this
+Dr. Martin and I will be meeting on a weekly basis to discuss the current progress of the project and the goals for the next week. The package is being developed using GitHub as the development platform. This will allow for easier management of code, collaboration with others, daily builds and testing of code, etc. Any feedback, e.g. failing test cases, should be documented so that they may be fixed in the next sprint.
+
+\section*{Current Progress}
+
+\end{document}

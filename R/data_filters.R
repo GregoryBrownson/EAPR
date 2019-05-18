@@ -1,5 +1,15 @@
 #' Implementation of filter outlined in Fama and French (1992).
+#'
+#' @importFrom data.table ':='
+#' @importFrom dplyr group_by mutate filter '%>%'
+#'
+#'
 #' @export
+#'
+#'
+filter <- function(crsp)
+
+#'
 filter.ff <- function(crsp) {
 
   crsp <- crsp %>%
@@ -8,7 +18,7 @@ filter.ff <- function(crsp) {
            has_Jun = any(month == 6),
            has_Dec = any(month == 12))
 
-  crsp <- filter(crsp, has_Jun == TRUE & has_Dec == TRUE)
+  crsp <- filter(crsp, has_Jun == TRUE & has_Dec == TRUE & is_financial == FALSE)
 
   drop <- c("has_Jun", "has_Dec")
 

@@ -3,11 +3,13 @@ Type: Package
 Title: Empirical Asset Pricing Research Platform
 Date: 2019
 Version: 0.1
-Author@R: c(person("Gregory", "Brownson", role=c("aut", "cre"), email="gregory.brownson@gmail.com"))
+Authors@R: c(person("Gregory", "Brownson", role=c("aut", "cre"), email="gregory.brownson@gmail.com"))
 Maintainer: Greg Brownson <gregory.brownson@gmail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-depends: data.table, lubridate, RPostgres
-License: What license is it under?
+Description: Package to perform portfolio and cross-sectional analysis on equities using data extracted from the Wharton Research Data Services.
+Depends: R (>= 3.0.2)
+Imports: chron, data.table, datetimeutils, dplyr, lubridate, RobStatTM, RPostgres, stats
+Suggests: knitr
+License: GPL (>= 3)
+RoxygenNote: 6.1.1
 Encoding: UTF-8
 LazyData: true
