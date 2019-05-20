@@ -4,7 +4,7 @@
 \alias{filter}
 \title{Implementation of filter outlined in Fama and French (1992).}
 \usage{
-filter(crsp)
+filter(x, type)
 }
 \description{
 Implementation of filter outlined in Fama and French (1992).

@@ -12,9 +12,9 @@
 #' @param preceding
 #' @param min.prec
 #'
-#' @importFrom data.table data.table
+#' @importFrom data.table data.table as.data.table
 #' @importFrom datetimeutils end_of_month
-#' @importFrom lubridate ceiling_date '%m-%' '%m+%'
+#' @importFrom lubridate ceiling_date '%m-%' '%m+%' years days
 #' @importFrom RPostgres dbClearResult dbConnect dbFetch dbSendQuery Postgres
 #'
 #' @export
@@ -32,12 +32,12 @@ extract <- function(username,
                     drop.excess    = T, # Boolean to drop extra variables extracted from wrds database
                     preceding      = 60,
                     min.prec       = 0.4) {
-  if (src == "wrds") {
+  if (src != "wrds") {
     stop("Sorry, only extraction from the wrds database is implemented right now. Please set the 'src' variable to 'wrds'")
   }
 
   data <- do.call(paste('extract.', src, sep = ''),
-                        list(username = usernamee,
+                        list(username = username,
                              variables = variables,
                              from = from,
                              to = to,
@@ -61,7 +61,7 @@ extract.wrds <- function(username,
                          drop.excess    = T, # Boolean to drop extra variables extracted from wrds database
                          preceding      = 60,
                          min.prec       = 24) {
-cat("Extracting data...this could take a while")
+cat("Extracting data...this could take a while\n")
 
   # Connect to wrds database
   wrds <- dbConnect(Postgres(),
@@ -107,15 +107,15 @@ cat("Extracting data...this could take a while")
   return(x)
 }
 
-getDailyData.wrds <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding) {
+getDailyData.wrds <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   # TODO: Method to extract daily data
 }
 
-getWeeklyData.wrds <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding) {
+getWeeklyData.wrds <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   # TODO: Method to extract weekly data
 }
 
-getMonthlyData.wrds <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding) {
+getMonthlyData.wrds <- function(conn, variables, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   x <- list()
 
   # # Check filter
@@ -169,7 +169,7 @@ getMonthlyData.wrds <- function(conn, variables, from, to, filter, rebalance.fre
   dbClearResult(res)
 
   # Change date to end of month
-  delret[, date := end_month(date)]
+  delret[, date := end_of_month(date)]
 
   # Merge crsp and delisted returns
   crsp <- merge(crsp, delret, on = c("permno", "date"), all.x = TRUE)
@@ -228,7 +228,7 @@ getMonthlyData.wrds <- function(conn, variables, from, to, filter, rebalance.fre
   dbClearResult(res)
 
   # Change dates to end of month and add lagged index variable
-  ind[, date := end_month(date)]
+  ind[, date := end_of_month(date)]
   ind[, lag_ind_ret := lag(ind_ret, 1)]
 
   # Start and end dates for risk-free rate time series
@@ -246,7 +246,7 @@ getMonthlyData.wrds <- function(conn, variables, from, to, filter, rebalance.fre
   dbClearResult(res)
 
   # Change date to end of month
-  rf[, date := end_month(date)]
+  rf[, date := end_of_month(date)]
 
   # Merge index data and risk-free rates
   market.dt <- merge(ind[-1], rf, by = "date", all.x = TRUE)
@@ -275,7 +275,7 @@ getAnnualCompustat <- function(conn, variables, from, to) {
   dict.options.comp <- list(BE     = c("pstkrv", "pstkl", "txditc", "seq"),
                             OP     = c("ebitda", "xint AS interest_exp"),
                             INV    = c("at AS assets",
-                                       "LAG(at, 1) as assets_prev OVER(PARTITION BY gvkey ORDER BY datadate)"),
+                                       "LAG(at, 1) OVER(PARTITION BY gvkey ORDER BY datadate) as assets_prev "),
                             "A/BE" = "at AS assets",
                             "E/P"  = "ib AS earnings",
                             "CF/P" = c("at AS assets", "ib AS earnings", "txdc"))
@@ -302,7 +302,7 @@ getAnnualCompustat <- function(conn, variables, from, to) {
 
   # Get year and change date to end of month
   comp[, year := year(date)]
-  comp[, date := end_month(date)]
+  comp[, date := end_of_month(date)]
 
   # Extract CRSP-Compustat Merged data
   SQL.ccm <- paste("SELECT gvkey, lpermno AS permno, linktype, linkprim,
@@ -335,7 +335,7 @@ getAnnualCompustat <- function(conn, variables, from, to) {
 
 # Calls on variable functions and returns a merged data table
 getFundamentals <- function(comp, crsp, variables) {
-  cat("Calculating fundamentals...")
+  cat("Calculating fundamentals...\n")
 
   dict.comp <- c(BE  = "bookEquity",
                  OP  = "operatingProfitability",

@@ -1,7 +1,7 @@
 # Implementations for cumputing fundamental variables. These functions will be internal and should NOT be
 # exported.
 
-#' @importFrom stats lm.fit
+#' @importFrom stats lm.fit lag na.omit
 #' @importFrom RobStatTM lmrobdetMM lmrobdet.control
 
 # Calculate pre-ranking beta, as outlined in Fama and French (1992)
@@ -13,14 +13,29 @@ preRankBeta <- function(x, preceding, periodicity, min.prec, type = "LS", ...) {
     return(FALSE)
   }
 
-  betas <- rollapply(data      = x,
-                     preceding = 60,
-                     FUN       = "compute_beta",
-                     type      = type,
-                     by.column = FALSE,
-                     by        = 12,
-                     partial   = 24,
-                     align     = "right")
+  if (type == 'classic') {
+    chkDots(...)
+    
+    if (nrow(x) < 24) {
+      return(FALSE)
+    }
+    
+    betas <- rollapply(data      = x,
+                       width     = 60,
+                       FUN       = "computeClassicDimsonBeta",
+                       type      = type,
+                       by.column = FALSE,
+                       partial   = 24,
+                       align     = "right")
+  } else {
+    betas <- rollapply(data      = x,
+                       width     = 60,
+                       FUN       = "computeClassicDimsonBeta",
+                       type      = type,
+                       by.column = FALSE,
+                       partial   = 24,
+                       align     = "right")
+  }
 
   return(betas)
 }
@@ -32,34 +47,29 @@ postRankBeta <- function(x, fromtype = "classic", ...) {
   if (nrow(x) < 24) {
     return(FALSE)
   }
-
-  start <- ceiling_date(x[1, date] %m-% months(6), "year") %m+% months(6) - days(1)
-
-  dates <-
+    
+  start_date <- max(ceiling_date(from %m-% months(6), "year") %m+% months(6), as.Date("1963-07-31"))
+    
+  indx <- as.integer(seq(sum(x$date <= start_date), nrow(x), by = 1))
 
   if (type == 'classic') {
     chkDots(...)
 
-    betas <- rollapply(data      = x,
-                       FUN       = computeClassicBeta,
-                       by.column = FALSE,
-                       by        = 12,
-                       partial   = 24,
-                       align     = "right")
+    lapply(indx, function (i, data) { computeClassicDimsonBeta(data[1:i]) }, data = x)
   } else {
-    lapply()
+    lapply(indx, function (i, data) { computeRobustDimsonBeta(data[1:i]) }, data = x)
   }
 
   return(betas)
 }
 
 # Function to compute Dimson betas using least squares regression
-computeClassicBeta <- function(x) {
+computeClassicDimsonBeta <- function(x) {
   fit = lm.fit(x[, c("ind_ret", "lag_ind_ret")], x[, "adj_ret"])
   sum(fit$coefficients[2:3])
 }
 
-computeRobustBeta <- function(x, ...) {
+computeRobustDimsonBeta <- function(x, ...) {
   fit = lmrobdetMM(adj_ret ~ ind_ret + lag_ind_ret, data = x, ...)
   sum(fit$coefficients[2:3])
 }

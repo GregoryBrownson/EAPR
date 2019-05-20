@@ -7,22 +7,27 @@
 #' @export
 #'
 #'
-filter <- function(crsp)
+filter <- function(x, type) {
+  for (i in 1:length(type)) {
+    x <- do.call(paste("filter", type[i], sep = '.'), x)
+  }
+  
+  return(x)
+}
 
-#'
-filter.ff <- function(crsp) {
-
-  crsp <- crsp %>%
+#' 
+filter.ff <- function(x) {
+  x <- x %>%
     group_by(permco, period) %>%
     mutate(month = month(date),
            has_Jun = any(month == 6),
            has_Dec = any(month == 12))
 
-  crsp <- filter(crsp, has_Jun == TRUE & has_Dec == TRUE & is_financial == FALSE)
+  x <- filter(x, has_Jun == TRUE & has_Dec == TRUE & is_financial == FALSE)
 
   drop <- c("has_Jun", "has_Dec")
 
-  crsp[, c(drop) := NULL]
+  x[, c(drop) := NULL]
 
   # comp <- comp %>%
   #   group_by(permno, date) %>%
@@ -32,6 +37,6 @@ filter.ff <- function(crsp) {
   #
   # comp[, is_valid := NULL]
 
-  return(crsp)
+  return(x)
 }
 

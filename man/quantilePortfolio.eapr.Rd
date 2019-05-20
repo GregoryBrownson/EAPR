@@ -4,7 +4,7 @@
 \alias{quantilePortfolio.eapr}
 \title{Quantile portfolio formation}
 \usage{
-\method{quantilePortfolio}{eapr}(x, q, on, sort = "uni")
+quantilePortfolio.eapr(x, q, on, sort = "uni")
 }
 \arguments{
 \item{x}{an eapr object which contains the time series of variables for all

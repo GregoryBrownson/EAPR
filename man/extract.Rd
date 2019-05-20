@@ -11,6 +11,9 @@ extract(username, src = "wrds", variables = c("ME", "BE", "BE/ME",
   rebalance.freq = "A", drop.excess = T, preceding = 60,
   min.prec = 0.4)
 }
+\arguments{
+\item{min.prec}{}
+}
 \description{
 This function accesses the wrds database and returns
 }

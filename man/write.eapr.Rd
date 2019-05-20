@@ -4,7 +4,7 @@
 \alias{write.eapr}
 \title{Write operations for eapr}
 \usage{
-\method{eapr}{write}(x)
+write.eapr(x)
 }
 \description{
 This function exports an eapr object to a file
