@@ -7,7 +7,7 @@ Authors@R: c(person("Gregory", "Brownson", role=c("aut", "cre"), email="gregory.
 Maintainer: Greg Brownson <gregory.brownson@gmail.com>
 Description: Package to perform portfolio and cross-sectional analysis on equities using data extracted from the Wharton Research Data Services.
 Depends: R (>= 3.0.2)
-Imports: chron, data.table, datetimeutils, dplyr, lubridate, RobStatTM, RPostgres, stats
+Imports: chron, data.table, datetimeutils, dplyr, lubridate, purrr, RobStatTM, RPostgres, stats, zoo
 Suggests: knitr
 License: GPL (>= 3)
 RoxygenNote: 6.1.1

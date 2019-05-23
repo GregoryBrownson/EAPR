@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_filters.R
 \name{filter}
 \alias{filter}
-\title{Implementation of filter outlined in Fama and French (1992).}
+\title{filter}
 \usage{
 filter(x, type)
 }

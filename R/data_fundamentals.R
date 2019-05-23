@@ -1,11 +1,12 @@
 # Implementations of fundamental variable computations. These functions will be internal and should NOT be
 # exported.
 
-#' @importFrom data.table set ':='
+#' @importFrom data.table set ':=' as.data.table
+#' @importFrom dplyr summarize
 
 bookEquity <- function(dt) {
   # comp
-  # Dependencies: pstkrv, pstkl, txditc, seq
+  # Dependencies: pstkrv, pstkl, pstk, txditc, seq
 
   dt[["pref_stock"]] <- ifelse(is.na(dt$pstkrv), dt$pstkl, dt$pstkrv)
   dt[["pref_stock"]] <- ifelse(is.na(dt$pref_stock), dt$pstk, dt$pref_stock)
@@ -18,8 +19,6 @@ bookEquity <- function(dt) {
 
   dt[["log_book_equity"]] <- log(dt$book_equity)
 
-  dt[, c("pstkrv", "pstkl", "txditc", "seq") := NULL]
-
   return(dt)
 }
 
@@ -27,6 +26,7 @@ marketEquity <- function(dt) {
   # crsp
   # Dependencies: prc, shrout
   dt[["market_equity"]] <- abs(dt$price) * dt$shares_out
+  set(dt, which(dt[["market_equity"]] <= 0), "market_equity", NaN)
 
   dt[["log_market_equity"]] <- log(dt$market_equity)
 
@@ -64,7 +64,7 @@ assetToBook <- function(dt) {
   return(dt)
 }
 
-assetsToMarket <- function(dt) {
+assetToMarket <- function(dt) {
   # merged
   # Dependencies: at
 
@@ -89,8 +89,6 @@ operatingProfitability <- function(dt) {
   # dependencies: ebitda, xint
   dt[["oper_prof"]] <- (dt$ebitda - dt$interest_exp) / dt$book_equity
 
-  dt[, c("ebitda", "interest_exp") := NULL]
-
   return(dt)
 }
 
@@ -108,8 +106,6 @@ cashFlowToPrice <- function(dt) {
   dt[["equity_share"]] <- dt$market_equity / (dt$assets - dt$book_equity + dt$market_equity)
 
   dt[["cf_price"]] <- dt$earnings + dt$equity_share * dt$depreciation + dt$deferred_tax
-
-  dt[, c("assets", "depreciation", "deferred_tax", "equity_share", "earnings") := NULL]
 
   return(dt)
 }

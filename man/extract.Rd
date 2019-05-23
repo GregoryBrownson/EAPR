@@ -12,7 +12,23 @@ extract(username, src = "wrds", variables = c("ME", "BE", "BE/ME",
   min.prec = 0.4)
 }
 \arguments{
-\item{min.prec}{}
+\item{username}{username for database}
+
+\item{src}{source of database}
+
+\item{variables}{variables to be extracted}
+
+\item{from}{starting date}
+
+\item{to}{end date}
+
+\item{periodicity}{frequency of the data}
+
+\item{rebalance.freq}{how often portfolios are rebalanced}
+
+\item{preceding}{number of preceding periods to consider for technical variables}
+
+\item{min.prec}{minimum number of preceding periods necessary to compute technical variables}
 }
 \description{
 This function accesses the wrds database and returns
