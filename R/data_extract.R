@@ -1,24 +1,26 @@
 #' Access the wrds database
-#'
+#' 
 #' This function accesses the wrds database and returns
-#'
-#' @param username username for database
-#' @param src source of database
-#' @param variables variables to be extracted
-#' @param from starting date
-#' @param to end date
-#' @param periodicity frequency of the data
-#' @param rebalance.freq how often portfolios are rebalanced
-#' @param preceding number of preceding periods to consider for technical variables
-#' @param min.prec minimum number of preceding periods necessary to compute technical variables
-#'
+#' 
 #' @importFrom data.table data.table as.data.table
 #' @importFrom datetimeutils end_of_month
-#' @importFrom dplyr full_join
+#' @importFrom dplyr full_join group_by mutate '%>%' ungroup
 #' @importFrom parallel clusterExport clusterEvalQ detectCores parLapply
 #' @importFrom purrr reduce
 #' @importFrom lubridate ceiling_date '%m-%' '%m+%' year days years
 #' @importFrom RPostgres dbClearResult dbConnect dbFetch dbSendQuery Postgres
+#'
+#' @param username username for database
+#' @param src source of database
+#' @param fundamental.var fundamental variables to be computed/extracted
+#' @param technical.var technical variables to be computed/extracted
+#' @param from starting date
+#' @param to end date
+#' @param periodicity frequency of the data
+#' @param rebalance.freq how often portfolios are rebalanced
+#' @param drop.excess Drop variables used to calculate fundamentals and technicals
+#' @param preceding number of preceding periods to consider for technical variables
+#' @param min.prec minimum number of preceding periods necessary to compute technical variables
 #'
 #' @export
 
@@ -27,7 +29,7 @@
 extract <- function(username,
                     src = "wrds",
                     fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-                    technical.var   = c("PreBeta", "PostBeta"),
+                    technical.var   = c("PreBeta"),
                     from            = as.Date("1963-07-31"),
                     to              = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
                     # filter          = 'none', # Options will be raw data, fama french, liquidity. May allow selection of multiple
@@ -41,17 +43,17 @@ extract <- function(username,
   }
 
   data <- do.call(paste('extract.', src, sep = ''),
-                        list(username = username,
-                             fundamental.var = fundamental.var,
-                             technical.var = technical.var,
-                             from = from,
-                             to = to,
-                             #filter = filter,
-                             periodicity = periodicity,
-                             rebalance.freq = rebalance.freq,
-                             drop.excess = drop.excess,
-                             preceding = preceding,
-                             min.prec = min.prec))
+                  list(username = username,
+                       fundamental.var = fundamental.var,
+                       technical.var = technical.var,
+                       from = from,
+                       to = to,
+                       #filter = filter,
+                       periodicity = periodicity,
+                       rebalance.freq = rebalance.freq,
+                       drop.excess = drop.excess,
+                       preceding = preceding,
+                       min.prec = min.prec))
 
   return(data)
 }
@@ -70,7 +72,7 @@ extract.wrds <- function(username,
 cat("Extracting data...this could take a while\n")
 
   # Connect to wrds database
-  wrds <- dbConnect(Postgres(),
+  conn <- dbConnect(Postgres(),
                     host = 'wrds-pgdata.wharton.upenn.edu',
                     port = 9737,
                     dbname  = 'wrds',
@@ -104,7 +106,7 @@ cat("Extracting data...this could take a while\n")
     x <- list()
     print('Weekly periodicity of returns not implemented yet!')
   } else {
-    x <- getMonthlyData.wrds(wrds, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
+    x <- getMonthlyData.wrds(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
   }
 
   x$periodicity <- periodicity
@@ -115,10 +117,12 @@ cat("Extracting data...this could take a while\n")
 
 getDailyData.wrds <- function(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   # TODO: Method to extract daily data
+  stop("Daily data not yet supported!")
 }
 
 getWeeklyData.wrds <- function(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   # TODO: Method to extract weekly data
+  stop("Weekly data not yet supported!")
 }
 
 getMonthlyData.wrds <- function(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
@@ -214,13 +218,19 @@ getMonthlyData.wrds <- function(conn, fundamental.var, technical.var, from, to, 
   # This line is for storing current data tables so further code can be tested without having to
   # query wrds again
   # raw <- list(crsp = crsp, comp = comp)
-
-  # Obtain fundamentals
-  x <- getFundamentals(comp, crsp, fundamental.var)
-
-  rets <- na.omit(x$ccm[, c("date", "permno", "adj_ret", "adj_retx", "rebalance_date")], cols = c("adj_ret", "adj_retx"))
+  
+  rets <- na.omit(crsp[, c("date", "permno", "adj_ret", "adj_retx", "rebalance_date")], cols = c("adj_ret", "adj_retx"))
+  
+  # Obtain
+  x <- getFundamentals(comp, crsp, fundamental.var, rebalance.freq)
 
   x$ccm <- x$ccm[x$ccm$date >= from]
+  
+  x$ccm[, c("period_ret", "period_adj_ret", "period_retx", "period_adj_retx")
+          := list(prod(1 + ret) - 1, prod(1 + adj_ret) - 1, prod(1 + retx) - 1, prod(1 + adj_retx) - 1),
+        by = .(rebalance_date, permno)]
+  
+  # Split data by rebalance date for cross-sectional regressions. Note: Could wait to do this in cross_sectional_regression.R 
 
   # Get start and end dates for index time series
   from.ind <- paste0("'", from %m-% months(preceding + 1), "'")
@@ -280,8 +290,8 @@ getSemiAnnualCompustat <- function(conn, fundamental.var, from, to) {
 # Extracts annual compustat data
 getAnnualCompustat <- function(conn, fundamental.var, from, to) {
   # Dictionary of variables which depend on Compustat data
-  # Note: May want to use hashtable if this list continues to grow
-  dict.options.comp <- list(BE     = c("pstkrv", "pstkl", "pstk", "txditc", "seq"),
+  # Note: May want to use hashtable as this list continues to grow
+  dict.options.comp <- list(BE     = c("pstkrv", "pstkl", "pstk", "txditc", "seq", "bkvlps", "upstk", "at as assets", "lt"),
                             OP     = c("ebitda", "xint AS interest_exp"),
                             INV    = c("at AS assets",
                                        "LAG(at, 1) OVER(PARTITION BY gvkey ORDER BY datadate) as assets_prev "),
@@ -292,6 +302,10 @@ getAnnualCompustat <- function(conn, fundamental.var, from, to) {
   # Obtain names of data which need to be extracted from Compustat
   options.comp <- paste(unique(unlist(dict.options.comp[intersect(names(dict.options.comp), fundamental.var)])), collapse = ', ')
 
+  if (length(options.comp) > 0) {
+    options.comp <- paste(',', options.comp)
+  }
+  
   # Compustat start date
   if ("INV" %in% fundamental.var) {
     from.comp <- paste0("'", year(from) - 2, "-12-31'")
@@ -300,7 +314,7 @@ getAnnualCompustat <- function(conn, fundamental.var, from, to) {
   }
 
   # Extract compustat data
-  SQL.comp <- paste("SELECT gvkey, datadate AS date,", options.comp,
+  SQL.comp <- paste("SELECT gvkey, datadate AS comp_date", options.comp,
                     "FROM comp.funda
                      WHERE indfmt = 'INDL'
                      AND datafmt = 'STD'
@@ -318,14 +332,17 @@ getAnnualCompustat <- function(conn, fundamental.var, from, to) {
   }
 
   # Get year and change date to end of month
-  comp[, year := year(date)]
-  comp[, date := end_of_month(date)]
+  comp[, year := year(comp_date)]
+  comp[, comp_date := end_of_month(comp_date)]
+
+  # Calculate rebalance date for compustat data
+  comp[, rebalance_date := ceiling_date(comp_date, "year") %m+% months(18) + years(1) - days(1)]
 
   # Extract CRSP-Compustat Merged data
   SQL.ccm <- paste("SELECT gvkey, lpermno AS permno, linktype, linkprim,
                     linkdt AS link_date, linkenddt AS link_end_date
                     FROM crsp.ccmxpf_linktable
-                    WHERE substr(linktype, 1, 1)='L'
+                    WHERE (linktype='LU' OR linktype='LC')
                     AND (linkprim ='C' OR linkprim='P')",
                    sep = " ")
 
@@ -340,21 +357,25 @@ getAnnualCompustat <- function(conn, fundamental.var, from, to) {
 
   # Merge compustat and ccm by gvkey
   comp <- merge(x = comp, y = ccm, by = "gvkey", all.x = TRUE, allow.cartesian = TRUE)
-
-  # Calculate rebalance date for compustat data
-  comp[, rebalance_date := ceiling_date(date, "year") %m+% months(6) - days(1)]
-
-  # Drop date
-  comp[, date := NULL]
-
+  
   # Only keep data with rebalance dates between link start and end dates
   comp <- comp[rebalance_date >= link_date & rebalance_date <= link_end_date]
+  
+  comp <- comp %>% group_by(permno, rebalance_date) %>%
+    mutate(max_date = max(comp_date)) %>%
+    ungroup() %>%
+    as.data.table()
+  
+  # Only keep data related to later date
+  comp <- comp[comp_date == max_date]
+  
+  comp[, c("comp_date", "max_date") := NULL]
 
   return(comp)
 }
 
 # Calls on variable functions and returns a merged data table
-getFundamentals <- function(comp, crsp, variables) {
+getFundamentals <- function(comp, crsp, variables, rebalance.freq) {
   cat("Calculating fundamentals...\n")
 
   dict.comp <- c(BE  = "bookEquity",
@@ -375,20 +396,20 @@ getFundamentals <- function(comp, crsp, variables) {
                    "A/ME"  = "assetToMarket")
 
   calls.merged <- as.vector(dict.merged[intersect(names(dict.merged), variables)])
-
+  
   # Get fundamental date from crsp and compustat databases
   for (i in 1:length(calls.comp)) {
     comp <- do.call(calls.comp[i], list(dt = comp))
   }
-
+  
   for (i in 1:length(calls.crsp)) {
     crsp <- do.call(calls.crsp[i], list(dt = crsp))
   }
-
+  
   # Merge crsp and compustat on rebalance dates
-  merged <- merge(crsp, comp, by = c("permno", "rebalance_date"), all.x = TRUE)
+  merged <- merge(crsp, comp, by = c("permno", "rebalance_date"), all = FALSE)
 
-  for (i in 1:length(calls.comp)) {
+  for (i in 1:length(calls.merged)) {
     merged <- do.call(calls.merged[i], list(dt = merged))
   }
 
@@ -409,23 +430,27 @@ getFundamentals <- function(comp, crsp, variables) {
   # keep.crsp <- as.vector(unlist(var.crsp[intersect(names(var.crsp), variables)]))
 
   var.names <- list(BE      = c("book_equity", "log_book_equity"),
-                    ME      = c("market_equity", "log_market_equity"),
+                    ME      = c("market_equity", "log_market_equity", "rDate_market_equity", "log_rDate_market_equity"),
                     "BE/ME" = c("book_market", "log_book_market"),
                     "A/BE"  = c("asset_book", "log_asset_book"),
                     "A/ME"  = c("asset_market", "log_asset_market"),
                     OP      = "oper_prof",
                     INV     = "investment",
                     "D/P"   = "div_yield",
-                    "E/P"   = "earnings_price",
+                    "E/P"   = c("earnings_price", "earnings_price_indicator", "positive_earnings_price"),
                     "CF/P"  = "cf_price")
 
+  if (rebalance.freq == "A") {
+    var.names$ME <- c(var.names$ME, "dec_market_equity", "log_dec_market_equity")
+  }
+  
   keep <- as.vector(unlist(var.names[intersect(names(var.names), variables)]))
 
-  keep <- c("date", "rebalance_date", "permno", "share_code", "exchange_code", "is_financial", "ret", "adj_ret", "retx", "adj_retx", keep)
+  keep <- c("date", "rebalance_date", "permno", "share_code", "exchange_code", "is_financial", "ret", "adj_ret", "retx", "adj_retx", "price", keep)
 
   merged <- merged[, ..keep]
 
-  return(list(ccm = merged))
+  return(list(ccm = merged[!duplicated(merged)]))
 }
 
 getTechnicals <- function(x, variables, preceding, min.prec) {
