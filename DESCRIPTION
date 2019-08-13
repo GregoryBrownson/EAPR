@@ -9,7 +9,7 @@ Description: Package to perform portfolio and cross-sectional analysis on equiti
 Depends: R (>= 3.0.2)
 Imports: chron, data.table, datetimeutils, dplyr, lubridate, purrr, RobStatTM, RPostgres, stats, zoo
 Suggests: knitr
-License: GPL (>= 3)
+License: GPL-3
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 LazyData: true
