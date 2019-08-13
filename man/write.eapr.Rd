@@ -6,6 +6,9 @@
 \usage{
 write.eapr(x)
 }
+\arguments{
+\item{x}{An eapr object.}
+}
 \description{
 This function exports an eapr object to a file
 }

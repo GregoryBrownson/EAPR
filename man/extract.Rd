@@ -4,19 +4,21 @@
 \alias{extract}
 \title{Access the wrds database}
 \usage{
-extract(username, src = "wrds", variables = c("ME", "BE", "BE/ME",
-  "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-  from = as.Date("1963-07-31"), to = as.Date(paste0(format(Sys.Date() -
-  years(1), "\%Y"), "-12-31")), periodicity = "M",
-  rebalance.freq = "A", drop.excess = T, preceding = 60,
-  min.prec = 0.4)
+extract(username, src = "wrds", fundamental.var = c("ME", "BE",
+  "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
+  technical.var = c("PreBeta"), from = as.Date("1963-07-31"),
+  to = as.Date(paste0(format(Sys.Date() - years(1), "\%Y"), "-12-31")),
+  periodicity = "M", rebalance.freq = "A", drop.excess = T,
+  preceding = 60, min.prec = 0.4)
 }
 \arguments{
 \item{username}{username for database}
 
 \item{src}{source of database}
 
-\item{variables}{variables to be extracted}
+\item{fundamental.var}{fundamental variables to be computed/extracted}
+
+\item{technical.var}{technical variables to be computed/extracted}
 
 \item{from}{starting date}
 
@@ -25,6 +27,8 @@ extract(username, src = "wrds", variables = c("ME", "BE", "BE/ME",
 \item{periodicity}{frequency of the data}
 
 \item{rebalance.freq}{how often portfolios are rebalanced}
+
+\item{drop.excess}{Drop variables used to calculate fundamentals and technicals}
 
 \item{preceding}{number of preceding periods to consider for technical variables}
 
