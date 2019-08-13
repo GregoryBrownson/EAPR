@@ -8,3 +8,4 @@ proposal/*.tex
 proposal/*.gz
 proposal/*.log
 
+packrat/lib*/
