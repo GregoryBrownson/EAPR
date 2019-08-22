@@ -1,6 +1,7 @@
 #' Quantile portfolio formation
 #'
-#' This function creates a univariate or bivariate quantile portfolio
+#'
+#' @description This function creates a univariate or bivariate quantile portfolio
 #'
 #' @param x An eapr object which contains the time series of variables for all
 #' stocks.
@@ -19,7 +20,7 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
 
   # Check if value for sort is valid
   valid.sorts <- c("univariate", "bivariate.ind", "bivariate.dep")
-  stopifnot(sort %in% c(valid.sorts))
+  stopifnot(sort %in% valid.sorts)
 
   # Check if there are the correct number of variables
   if (sort == "univariate") {
@@ -32,24 +33,62 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
   stopifnot(all(on %in% x$ccm))
 
   # Check if the value for q is valid
-  if (is.vector(q)) {
+  if (length(q) == 1) {
+    stopifnot(q >= 1)
+    q <- seq(from = 0.0, to = 1.0, length.out = q + 2)
+  } else if (is.numeric(q)) {
     stopifnot(all(q >= 0.0 & q <= 1.0))
     q <- q[order(q)]
     q <- unique(c(0.0, q, 1.0))
-  } else if (is.numeric(q)) {
-    stopifnot(q >= 1)
-    q <- seq(from = 0.0, to = 1.0, length.out = q + 2)
   } else {
     stop("Invalid option for q. Should be a vector of percentile cuts or an integer indicating the number of quantiles desired.")
   }
+  
+  cols <- c("rebalance_date", "permno", "exchange_code", on)
+  
+  dat.split <- split(x$ccm[month(date) == 7, ..cols], x$ccm[month(date) == 7]$rebalance_date)
+  
+  n <- length(q) - 1
 
   if (sort == "univariate") {
-    cuts <- quantile(x$ccm[, ..on], q)
+    dat.list <- lapply(dat.split, function(dt, col, q) {
+      dt[[paste0(col, "_quantile")]] <- cut(dt[[col]], breaks = quantile(na.omit(dt[exchange_code == 1][[col]]), probs = q), labels = 1:n, right = FALSE)
+      cols <- c("rebalance_date", "permno", paste0(on, "_quantile"))
+      dt[, ..cols]
+    },
+    col = on,
+    q = q)
+    dat <- Reduce(rbind, dat.list)
+  } else if (sort == "bivariate.ind") {
+    dat.list <- lapply(dat.split, function(dt, col, q) {
+      dt[[paste0(col[1], "_quantile")]] <- cut(dt[[col[1]]], breaks = quantile(na.omit(dt[exchange_code == 1][[col[1]]]), probs = q), labels = 1:n, right = FALSE)
+      dt[[paste0(col[2], "_quantile")]] <- cut(dt[[col[2]]], breaks = quantile(na.omit(dt[exchange_code == 1][[col[2]]]), probs = q), labels = 1:n, right = FALSE)
+      cols <- c("rebalance_date", "permno", paste0(on[1], "_quantile"), paste0(on[2], "_quantile"))
+      dt[, ..cols]
+    },
+    col = on,
+    q = q)
+    dat <- Reduce(rbind, dat.list)
+  } else {
+    dat.list <- lapply(dat.split, function(dt, col, q) {
+      dt[[paste0(col[1], "_quantile")]] <- cut(dt[[col[1]]], breaks = quantile(na.omit(dt[exchange_code == 1][[col[1]]]), probs = q), labels = 1:n, right = FALSE)
+      dt.list <- lapply(split(dt, dt[[paste0(on[1], "_quantile")]]), function(dt, col, q) {
+        dt[[paste0(col, "_quantile")]] <- cut(dt[[col]], breaks = quantile(na.omit(dt[exchange_code == 1][[col]]), probs = q), labels = 1:n, right = FALSE)
+        dt
+      },
+      col = col[2],
+      q = q)
+      
+      dt <- Reduce(rbind, dt.list)
+      cols <- c("rebalance_date", "permno", paste0(on[1], "_quantile"), paste0(on[2], "_quantile"))
+      dt[, ..cols]
+    },
+    col = on,
+    q = q)
+    dat <- Reduce(rbind, dat.list)
   }
-  
-  portfolio <- list()
 
-  return(portfolio)
+  return(dat)
 }
 
 quartilePortfolio <- function(x, on, sort = "uni") {
