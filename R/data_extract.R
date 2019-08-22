@@ -24,8 +24,6 @@
 #'
 #' @export
 
-# TODO: Add leverage ratios
-
 extract <- function(username,
                     src = "wrds",
                     fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
