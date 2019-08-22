@@ -7,5 +7,5 @@
 proposal/*.tex
 proposal/*.gz
 proposal/*.log
+inst/etc/img
 
-packrat/lib*/
