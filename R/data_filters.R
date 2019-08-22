@@ -2,12 +2,11 @@
 #' 
 #' @importFrom data.table ':=' as.data.table
 #' @importFrom lubridate year
-#' @importFrom dplyr group_by arrange mutate ungroup
 #'
-#' @title filter
+#' @title applyFilter
 #'
-#' @param x eapr object
-#' @param type Single filter or list of filters
+#' @param x An eapr object
+#' @param type Filter or list of filters to apply to data
 #'
 #' @export
 #'
@@ -32,36 +31,47 @@ applyFilter <- function(x, type) {
 }
 
 filter.ff92 <- function(x) {
-  x$ccm <- x$ccm %>%
-    group_by(permno, rebalance_date) %>%
-    mutate(month = month(date),
-           has_Jun = any(month == 6),
-           has_Dec = any(month == 12)) %>%
-    dplyr::filter(has_Jun == TRUE && has_Dec == TRUE && is_financial == 0) %>%
-    ungroup %>%
-    as.data.table
-
-  x$ccm[, c("month", "has_Jun", "has_Dec", "is_financial") := NULL]
+  # valid.subset <- x$ccm %>%
+  #   group_by(permno, rebalance_date) %>%
+  #   mutate(month = month(date),
+  #          has_Jun = any(month == 6),
+  #          has_Dec = any(month == 12)) %>%
+  #   dplyr::filter(has_Jun == TRUE && has_Dec == TRUE && is_financial == 0) %>%
+  #   ungroup %>%
+  #   as.data.table
   
-  valid.subset <- x$market.dt %>%
-    group_by(permno) %>%
-    arrange(date) %>%
-    mutate(count = seq(n())) %>%
-    ungroup %>%
-    group_by(permno, rebalance_date) %>%
-    mutate(valid_obs = any(count >= 24)) %>%
-    dplyr::filter(valid_obs == TRUE) %>%
-    ungroup %>%
-    as.data.table
+  dt <- x$ccm[, .(date, rebalance_date, permno, is_financial)]
+  dt[, c("has_Jun", "has_Dec") := list(any(month(date) == 6), any(month(date) == 12)), by = list(rebalance_date, permno)]
+  dt <- dt[has_Jun == TRUE & has_Dec == TRUE & is_financial == 0]
+  dt[, rebalance_date := rebalance_date + years(1)]
   
-  valid.subset[, rebalance_date := rebalance_date + years(1)]
+  dt <- unique(dt[, .(permno, rebalance_date)])
   
-  valid.subset <- unique(valid.subset[, .(permno, rebalance_date)])
+  x$ccm <- merge(x$ccm, dt[, .(permno, rebalance_date)], by = c("permno", "rebalance_date"))
   
-  x$ccm <- merge(x$ccm, valid.subset[, .(permno, rebalance_date)], by = c("permno", "rebalance_date"))
+  x$ccm[, c("is_financial") := NULL]
+  
+  # valid.subset <- x$market.dt %>%
+  #   group_by(permno) %>%
+  #   arrange(date) %>%
+  #   mutate(count = seq(n())) %>%
+  #   ungroup %>%
+  #   group_by(permno, rebalance_date) %>%
+  #   mutate(valid_obs = any(count >= 24)) %>%
+  #   dplyr::filter(valid_obs == TRUE) %>%
+  #   ungroup %>%
+  #   as.data.table
+  
+  dt <- x$market.dt[, .(date, rebalance_date, permno)]
+  dt[, rebalance_date := rebalance_date + years(1)]
+  dt[order(date), count := seq(from = 1, to = .N), by = list(permno)]
+  dt[, valid_obs := any(count >= 24), by = list(permno, rebalance_date)]
+  dt <- dt[valid_obs == TRUE]
+  
+  x$ccm <- merge(x$ccm, unique(dt[, .(permno, rebalance_date)]), by = c("permno", "rebalance_date"))
   
   x$market.dt <- x$market.dt[permno %in% unique(x$ccm$permno)]
 
-  return(na.omit(x, cols = c("book_equity", "asset_market")))
+  return(na.omit(x, cols = c("book_equity", "asset_market", "earnings_price")))
 }
 
