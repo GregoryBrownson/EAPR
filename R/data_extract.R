@@ -108,9 +108,11 @@ cat("Extracting data...this could take a while\n")
   } else {
     x <- getMonthlyData.wrds(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
   }
-
+  
   x$periodicity <- periodicity
   x$rebalance.freq <- rebalance.freq
+  x$preceding <- preceding
+  x$min.prec <- ceiling(preceding * min.prec)
 
   return(x)
 }
@@ -453,54 +455,54 @@ getFundamentals <- function(comp, crsp, variables, rebalance.freq) {
   return(list(ccm = merged[!duplicated(merged)]))
 }
 
-getTechnicals <- function(x, variables, preceding, min.prec) {
-  # TODO: Implement method to call on functions to compute technical variables
-  cat("Calculating fundamentals...\n")
-
-  split.market.dt <- split(x$market.dt, x$market.dt$permno)
-
-  func.dict <- c(PreBeta  = "preRankBeta",
-                 PostBeta = "postRankBeta")
-
-  func.calls <- as.vector(func.dict[intersect(names(func.dict), variables)])
-
-  supp.func.dict <- c(PreBeta = "computeDimsonBeta",
-                      PostBeta = "computeDimsonBeta")
-
-  supp.func.calls <- as.vector(unique(func.dict[intersect(names(func.dict), variables)]))
-
-  technicals <- unlist(lapply(split.market.dt, function(x, funcs, preceding, min.prec) {
-                                dat <- lapply(funcs, function(f, dt, preceding, min.prec) {
-                                                do.call(f, list(dt, preceding, min.prec))
-                                              },
-                                              dt = x,
-                                              preceding = preceding,
-                                              min.prec  = min.prec)
-                                reduce(dat, full_join, by = "date")
-                              },
-                              funcs = func.calls,
-                              preceding  = preceding,
-                              min.prec   = min.prec))
-
-    cl <- makeCluster(as.integer(max(detectCores() * 3 / 4, 1)))
-
-    clusterEvalQ(cl, library(lubridate))
-    clusterEvalQ(cl, library(stats))
-    clusterEvalQ(cl, library(RobStatTM))
-    clusterEvalQ(cl, library(zoo))
-
-    clusterExport(cl, c(func.calls, supp.func.calls,  "data.table", "reduce", "full_join"))
-
-    technicals <- parLapply(cl, split.market.dt, function(x, funcs, preceding, min.prec) {
-                              dat <- lapply(funcs, function(f, dt, preceding, min.prec) {
-                                              do.call(f, list(dt, preceding, min.prec))
-                                            },
-                                            dt = x,
-                                            preceding = preceding,
-                                            min.prec  = min.prec)
-                              reduce(dat, full_join, by = "date")
-                            },
-                            funcs = func.calls,
-                            preceding  = preceding,
-                            min.prec   = min.prec)
-}
+# getTechnicals <- function(x, variables, preceding, min.prec) {
+#   # TODO: Implement method to call on functions to compute technical variables
+#   cat("Calculating fundamentals...\n")
+# 
+#   split.market.dt <- split(x$market.dt, x$market.dt$permno)
+# 
+#   func.dict <- c(PreBeta  = "preRankBeta",
+#                  PostBeta = "postRankBeta")
+# 
+#   func.calls <- as.vector(func.dict[intersect(names(func.dict), variables)])
+# 
+#   supp.func.dict <- c(PreBeta = "computeDimsonBeta",
+#                       PostBeta = "computeDimsonBeta")
+# 
+#   supp.func.calls <- as.vector(unique(func.dict[intersect(names(func.dict), variables)]))
+# 
+#   technicals <- unlist(lapply(split.market.dt, function(x, funcs, preceding, min.prec) {
+#                                 dat <- lapply(funcs, function(f, dt, preceding, min.prec) {
+#                                                 do.call(f, list(dt, preceding, min.prec))
+#                                               },
+#                                               dt = x,
+#                                               preceding = preceding,
+#                                               min.prec  = min.prec)
+#                                 reduce(dat, full_join, by = "date")
+#                               },
+#                               funcs = func.calls,
+#                               preceding  = preceding,
+#                               min.prec   = min.prec))
+# 
+#     cl <- makeCluster(as.integer(max(detectCores() * 3 / 4, 1)))
+# 
+#     clusterEvalQ(cl, library(lubridate))
+#     clusterEvalQ(cl, library(stats))
+#     clusterEvalQ(cl, library(RobStatTM))
+#     clusterEvalQ(cl, library(zoo))
+# 
+#     clusterExport(cl, c(func.calls, supp.func.calls,  "data.table", "reduce", "full_join"))
+# 
+#     technicals <- parLapply(cl, split.market.dt, function(x, funcs, preceding, min.prec) {
+#                               dat <- lapply(funcs, function(f, dt, preceding, min.prec) {
+#                                               do.call(f, list(dt, preceding, min.prec))
+#                                             },
+#                                             dt = x,
+#                                             preceding = preceding,
+#                                             min.prec  = min.prec)
+#                               reduce(dat, full_join, by = "date")
+#                             },
+#                             funcs = func.calls,
+#                             preceding  = preceding,
+#                             min.prec   = min.prec)
+# }
