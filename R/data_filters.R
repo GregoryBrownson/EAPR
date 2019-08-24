@@ -91,4 +91,3 @@ ff92Filter <- function(x) {
 
   return(na.omit(x, cols = cols))
 }
-

@@ -127,16 +127,13 @@ fama_macbeth <- function(formula, x, type = "ols", outliers.method = "winsorize"
                         ot  = outliers.method,
                         ot.lev = outliers.level)
       } else {
-        coefs <- lapply(dat.split, function(dt, fun, fm, dependent, ot, ot.lev, control) {
+        coefs <- lapply(dat.split, function(dt, fun, fm, dependent, control) {
                           x <- na.omit(dt)
-                          x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
                           coef(do.call(fun, list(formula = fm, data = x, control = control)))
                         },
                         fun = fun,
                         fm = formula,
                         dependent = dependent,
-                        ot  = outliers.method,
-                        ot.lev = outliers.level,
                         control = robust.control)
       }
       
@@ -169,16 +166,13 @@ fama_macbeth <- function(formula, x, type = "ols", outliers.method = "winsorize"
                                              ot  = outliers.method,
                                              ot.lev = outliers.level)
                            } else {
-                             coefs <- lapply(dt.split, function(dt, fun, fm, dependent, ot, ot.lev, control) {
+                             coefs <- lapply(dt.split, function(dt, fun, fm, dependent, control) {
                                                x <- na.omit(dt)
-                                               x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
                                                coef(do.call(fun, list(formula = fm, data = x, control = control)))
                                              },
                                              fun = fun,
                                              fm = formula,
                                              dependent = dependent,
-                                             ot  = outliers.method,
-                                             ot.lev = outliers.level,
                                              control = robust.control)
                            }
                            dates <- as.Date(names(coefs))
@@ -193,6 +187,8 @@ fama_macbeth <- function(formula, x, type = "ols", outliers.method = "winsorize"
                          robust.control = robust.control)
     }
   }
+  
+  names(dat.list) <-  type
   
   class(dat.list) <- "fama_macbeth"
   

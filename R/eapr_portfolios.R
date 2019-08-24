@@ -1,5 +1,7 @@
 #' Quantile portfolio formation
 #'
+#' @rdname quantilePortfolio
+#' @export quantilePortfolio
 #'
 #' @description This function creates a univariate or bivariate quantile portfolio
 #'
@@ -11,8 +13,8 @@
 #' @param on Variable or variables to sort on (max of 2).
 #' @param sort Type of sort for portfolios. Options are univariate, bivariate.ind
 #' (independent bivariate), and bivariate.dep (dependent bivariate) sorts.
-#'
-#' @export
+#' 
+#' @return An eaprPortfolio object containing a data.table of the time series of portfolio assignments for each stock in each period.
 
 # TODO: Customize the variables to allow names such as 'Size' and 'Beta' instead of actual variable names
 
@@ -48,7 +50,9 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
   
   cols <- c("rebalance_date", "permno", "exchange_code", on)
   
-  dat.split <- split(x$ccm[month(date) == 7, ..cols], x$ccm[month(date) == 7]$rebalance_date)
+  start_month <- unique(month(x$ccm$rebalance_date))
+  
+  dat.split <- split(x$ccm[month(date) == start_month, ..cols], x$ccm[month(date) == start_month]$rebalance_date)
   
   n <- length(q) - 1
 
@@ -97,14 +101,20 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
   return(z)
 }
 
+#' @rdname quantilePortfolio
+#' @export
 quartilePortfolio <- function(x, on, sort = "univariate") {
   return(quantilePortfolio(x, 4, on, sort))
 }
 
+#' @rdname quantilePortfolio
+#' @export
 quintilePortfolio <- function(x, on, sort = "univariate") {
   return(quantilePortfolio(x, 5, on, sort))
 }
 
+#' @rdname quantilePortfolio
+#' @export
 decilePortfolio <- function(x, on, sort = "univariate") {
   return(quantilePortfolio(x, 10, on, sort))
 }
