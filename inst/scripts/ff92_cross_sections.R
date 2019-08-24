@@ -1,6 +1,6 @@
 #rm(list = ls())
 
-library(data.table)
+#library(data.table)
 library(devtools)
 library(ggplot2)
 library(gridExtra)
@@ -11,20 +11,22 @@ library(sandwich)
 library(tables)
 library(xts)
 
+library(EAPR)
+
 devtools::load_all(".")
 
 eapr <- EAPR::extract("gsb25")
 
 dat.filtered <- EAPR::filter.ff92(eapr)
 
-data.split <- split(dat.filtered$ccm, dat.filtered$ccm$date)
+size.cs <- EAPR::fama_macbeth(adj_ret * 100 ~ log_rDate_market_equity, x = dat.filtered)
 
 ## SIZE
 
 # LS and Robust regressions
 fit.classic.size <- lapply(data.split, function(x) {
   x <- na.omit(x, c("adj_ret", "log_rDate_market_equity"))
-  unname(coef(lm(adj_ret * 100 ~ log_rDate_market_equity, data = x)))
+  coef(lm(adj_ret * 100 ~ log_rDate_market_equity, data = x))
 })
 
 fit.robust.size <- lapply(data.split, function(x) {
@@ -35,7 +37,7 @@ fit.robust.size <- lapply(data.split, function(x) {
 
 dates <- as.Date(names(fit.classic.size))
 
-fit.classic.size.dt <- data.table(matrix(unlist(fit.classic.size), ncol = 2, byrow = TRUE))
+fit.classic.size.dt <- cbind(data.table(date = dates), data.table(Reduce(rbind, fit.classic.size)))
 
 colnames(fit.classic.size.dt) <- c("beta_0", "beta_1")
 
