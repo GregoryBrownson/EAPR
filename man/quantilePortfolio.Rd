@@ -2,9 +2,18 @@
 % Please edit documentation in R/eapr_portfolios.R
 \name{quantilePortfolio}
 \alias{quantilePortfolio}
+\alias{quartilePortfolio}
+\alias{quintilePortfolio}
+\alias{decilePortfolio}
 \title{Quantile portfolio formation}
 \usage{
 quantilePortfolio(x, q, on, sort = "univariate")
+
+quartilePortfolio(x, on, sort = "univariate")
+
+quintilePortfolio(x, on, sort = "univariate")
+
+decilePortfolio(x, on, sort = "univariate")
 }
 \arguments{
 \item{x}{An eapr object which contains the time series of variables for all
@@ -18,6 +27,9 @@ cut points.}
 
 \item{sort}{Type of sort for portfolios. Options are univariate, bivariate.ind
 (independent bivariate), and bivariate.dep (dependent bivariate) sorts.}
+}
+\value{
+An eaprPortfolio object containing a data.table of the time series of portfolio assignments for each stock in each period.
 }
 \description{
 This function creates a univariate or bivariate quantile portfolio

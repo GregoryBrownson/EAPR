@@ -4,7 +4,7 @@
 \alias{fama_macbeth}
 \title{Fama MacBeth Cross-Sectional Regressions}
 \usage{
-fama_macbeth(formula, x, type = "ols", outliers = "winsorize",
+fama_macbeth(formula, x, type = "ols", outliers.method = "winsorize",
   outliers.level = 0.005, robust.control = NULL)
 }
 \arguments{
@@ -19,7 +19,7 @@ cut points.}
 Least-squares may be selected by giving this parameter a value 'ols' or 'ls' and Robust MM is chosen by giving this parameter a value of 'mm' or 
 'robust.mm'.}
 
-\item{outliers}{Method for dealing with outliers. Options are 'trim', 'winzorize', and 'none'.}
+\item{outliers.method}{Method for dealing with outliers. Options are 'trim', 'winzorize', and 'none'.}
 
 \item{outliers.level}{Level to use for outliers. Indicates that whichever method chosen, unless 'none', will be applied to the x and 1 - x percentiles.}
 
