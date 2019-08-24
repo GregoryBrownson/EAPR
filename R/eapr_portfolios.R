@@ -14,6 +14,8 @@
 #'
 #' @export
 
+# TODO: Customize the variables to allow names such as 'Size' and 'Beta' instead of actual variable names
+
 quantilePortfolio <- function(x, q, on, sort = "univariate") {
   # x should be eapr object
   stopifnot(class(x) == "eapr")
@@ -51,6 +53,7 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
   n <- length(q) - 1
 
   if (sort == "univariate") {
+    
     dat.list <- lapply(dat.split, function(dt, col, q) {
       dt[[paste0(col, "_quantile")]] <- cut(dt[[col]], breaks = quantile(na.omit(dt[exchange_code == 1][[col]]), probs = q), labels = 1:n, right = FALSE)
       cols <- c("rebalance_date", "permno", paste0(on, "_quantile"))
@@ -87,18 +90,73 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
     q = q)
     dat <- Reduce(rbind, dat.list)
   }
+  
+  z <- list(portfolios = dat, var = on, type = sort)
+  class(z) <- "eaprPortfolio"
 
-  return(dat)
+  return(z)
 }
 
-quartilePortfolio <- function(x, on, sort = "uni") {
+quartilePortfolio <- function(x, on, sort = "univariate") {
   return(quantilePortfolio(x, 4, on, sort))
 }
 
-quintilePortfolio <- function(x, on, sort = "uni") {
+quintilePortfolio <- function(x, on, sort = "univariate") {
   return(quantilePortfolio(x, 5, on, sort))
 }
 
-decilePortfolio <- function(x, on, sort = "uni") {
+decilePortfolio <- function(x, on, sort = "univariate") {
   return(quantilePortfolio(x, 10, on, sort))
+}
+
+# Calculates post-ranking beta for returns on sorted portfolios, as described in Fama and French (1992)
+
+portfolio_means.eapr <- function(x, p, response, excess = "vw_index") {
+  stopifnot(class(p) == "eaprPortfolio")
+  
+  cols <- c("rebalance_date", "permno", p$on, response)
+  dat <- dat[, ..cols]
+  
+  if ("ret" %in% response) {
+    if (excess == "vw_index") {
+      merge(dat, unique(x$market.dt[, .(rebalance_date, vwind_ret)]), by = "rebalance_date")
+      dat[, excess_ret := get(response) - vwind_ret]
+    } else if (excess == "ew") {
+      dat[, eqind_ret := sum(get(response)), by = list(date)]
+      dat[, excess_ret := get(response) - eqind_ret]
+    }
+  }
+  
+}
+
+portfolio_stdev.eapr <- function(x, p, response) {
+  
+}
+
+postRankBeta <- function(x, p, preceding, min.prec, type = "classic") {
+  stopifnot(all(type %in% c('classic', 'robust')))
+  
+  min <- as.integer(preceding * min.prec)
+  
+  if (nrow(x) < min) {
+    return(data.table(date = x$date, post_rank_beta = NA))
+  }
+  
+  start_date <- max(ceiling_date(x$date[1] %m-% months(6), "year") %m+% months(6) - days(1), as.Date("1963-06-30"))
+  
+  indx <- seq(max(min, as.integer(sum(x$date <= start_date))), nrow(x), by = 1)
+  
+  betas <- lapply(indx, function (i, data, type) { DimsonBeta(data[1:i], type) },
+                  data = x,
+                  type = type)
+  
+  names <- paste0("post_rank_beta_", names(betas[[1]]))
+  
+  betas <- matrix(unlist(betas), ncol = length(type), byrow = TRUE)
+  
+  colnames(betas) <- names
+  
+  betas <- data.table(x[indx, "date"], betas)
+  
+  return(betas)
 }
