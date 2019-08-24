@@ -13,7 +13,7 @@
 #' @param type Type(s) of regression method(s) to use. Current supported methods are least-squares and robust MM regressions. 
 #' Least-squares may be selected by giving this parameter a value 'ols' or 'ls' and Robust MM is chosen by giving this parameter a value of 'mm' or 
 #' 'robust.mm'.
-#' @param outliers Method for dealing with outliers. Options are 'trim', 'winzorize', and 'none'.
+#' @param outliers.method Method for dealing with outliers. Options are 'trim', 'winzorize', and 'none'.
 #' @param outliers.level Level to use for outliers. Indicates that whichever method chosen, unless 'none', will be applied to the x and 1 - x percentiles.
 #' @param robust.control Specifies model parameters for robust regression. See \code{\link[RobStatTM]{lmrobdet.control}} for more info.
 #' 
@@ -22,13 +22,13 @@
 #' 
 #' @author Gregory Brownson, \email{gregory.brownson@gmail.com}
 
-fama_macbeth <- function(formula, x, type = "ols", outliers = "winsorize", outliers.level = 0.005, robust.control = NULL) {
+fama_macbeth <- function(formula, x, type = "ols", outliers.method = "winsorize", outliers.level = 0.005, robust.control = NULL) {
   if (any(type != "ols") & is.null(robust.control)) {
     robust.control <- lmrobdet.control(efficiency = 0.99, family = "optimal")
   }
   
-  if (outliers %in% c("winsorize", "trim", "none") == FALSE) {
-    stop(paste0(outliers, " not a valid method!"))
+  if (outliers.method %in% c("winsorize", "trim", "none") == FALSE) {
+    stop(paste0(outliers.method, " not a valid method!"))
   }
   
   type <- tolower(unique(type))
@@ -36,13 +36,15 @@ fama_macbeth <- function(formula, x, type = "ols", outliers = "winsorize", outli
   type <- gsub("ols", "ls", type)
   type <- gsub("^mm", "robust.mm", type)
   
-  dat <- model.frame(formula, data = x$ccm)
+  cols <- c("date", "permno", all.vars(formula))
   
-  dat.split <- split(dat.filtered$ccm, dat.filtered$ccm$date)
+  dat <- x$ccm[, ..cols]
   
-  dependent <- colnames(dat)[2:ncol(dat)]
+  dat.split <- split(dat, dat$date)
   
-  if (outliers == 'none') {
+  dependent <- all.vars(formula)[-1]
+  
+  if (outliers.method == 'none') {
     if (length(type) == 1) {
       fun <- switch(type,
                     ls  = "lm",
@@ -53,13 +55,12 @@ fama_macbeth <- function(formula, x, type = "ols", outliers = "winsorize", outli
         stop(paste("Invalid model type:", type))
       }
       
-      coefs <- lapply(dat.split, function(dt, fm, fun, dependent) {
-               dt <- na.omit(x)
-               coef(do.call(fun, list(formula = fm, data = dt)))
-             },
-             fm = formula,
-             fun = fun,
-             dependent = dependent)
+      coefs <- lapply(dat.split, function(dt, fun, fm) {
+                        x <- na.omit(dt)
+                        coef(do.call(fun, list(formula = fm, data = x)))
+                      },
+                      fun = fun,
+                      fm = formula)
       
       dates <- as.Date(names(coefs))
       
@@ -81,28 +82,26 @@ fama_macbeth <- function(formula, x, type = "ols", outliers = "winsorize", outli
                            
                            if (fun == "lm") {
                              coefs <- lapply(dt.split, function(dt, fun, fm) {
-                               dt <- na.omit(dt)
-                               coef(lm(formula, data = dt))
-                             },
-                             fun = fun,
-                             fm  = formula,
-                             dependent = dependent)
+                                               x <- na.omit(dt)
+                                               coef(lm(formula, data = x))
+                                             },
+                                             fun = fun,
+                                             fm  = formula)
                            } else {
-                             coefs <- lapply(dt.split, function(dt, fun, fm) {
-                               dt <- na.omit(dt)
-                               coef(do.call(fun, list(formula = fm, data = dt)))
-                             },
-                             fun = fun,
-                             fm = formula,
-                             dependent = dependent)
+                             coefs <- lapply(dt.split, function(dt, fun, fm, control) {
+                                               x <- na.omit(dt)
+                                               coef(do.call(fun, list(formula = fm, data = x, control = control)))
+                                             },
+                                             fun = fun,
+                                             fm = formula,
+                                             control = robust.control)
                            }
-                           dates <- as.Date(names(fit.classic.size))
+                           dates <- as.Date(names(coefs))
                            
                            cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
                          },
                          dt.split  = dat.split,
                          formula   = formula,
-                         dependent = dependent,
                          robust.control = robust.control)
     }
   } else {
@@ -116,14 +115,30 @@ fama_macbeth <- function(formula, x, type = "ols", outliers = "winsorize", outli
         stop(paste("Invalid model type:", type))
       }
       
-      coefs <- lapply(dat.split, function(dt, fm, fun, ot, ot.lev) {
-        x <- na.omit(x, c("adj_ret", "log_rDate_market_equity"))
-        coef(do.call(fun, list(fm, dt)))
-      },
-      fm = formula,
-      fun = fun,
-      ot  = outliers,
-      ot.lvl = outliers.level)
+      if (fun == "lm") {
+        coefs <- lapply(dat.split, function(dt, fun, fm, dependent, ot, ot.lev) {
+                          x <- na.omit(dt)
+                          x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
+                          coef(do.call(fun, list(formula = fm, data = x)))
+                        },
+                        fun = fun,
+                        fm = formula,
+                        dependent = dependent,
+                        ot  = outliers.method,
+                        ot.lev = outliers.level)
+      } else {
+        coefs <- lapply(dat.split, function(dt, fun, fm, dependent, ot, ot.lev, control) {
+                          x <- na.omit(dt)
+                          x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
+                          coef(do.call(fun, list(formula = fm, data = x, control = control)))
+                        },
+                        fun = fun,
+                        fm = formula,
+                        dependent = dependent,
+                        ot  = outliers.method,
+                        ot.lev = outliers.level,
+                        control = robust.control)
+      }
       
       dates <- as.Date(names(coefs))
       
@@ -131,48 +146,51 @@ fama_macbeth <- function(formula, x, type = "ols", outliers = "winsorize", outli
       
       dat.list[[fun]] <- cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
     } else {
-      dat.list <- lapply(type, function(model, dt.split, formula, control) {
-        fun <- switch(model,
-                      ols = "lm",
-                      ls  = "lm",
-                      mm  = "lmrobdetMM",
-                      robust = "lmrobdetMM",
-                      NULL)
-        
-        if (is.null(fun)) {
-          stop(paste("Invalid model type:", model))
-        }
-        
-        if (fun == "lm") {
-          coefs <- lapply(dt.split, function(dt, fun, fm, ot, ot.lev) {
-            dependent <- 
-            dt <- na.omit(dt, c("adj_ret", "log_rDate_market_equity"))
-            coef(lm(formula, data = x))
-          },
-          fun = fun,
-          fm = formula,
-          ot  = outliers,
-          ot.lev = outliers.level)
-        } else {
-          coefs <- lapply(dt.split, function(dt, fun, fm, ot, ot.lev, control) {
-            dt <- na.omit(dt, c("adj_ret", "log_rDate_market_equity"))
-            coef(do.call(fun, list(formula = fm, data = dt, control = control)))
-          },
-          fun = fun,
-          fm = formula,
-          ot  = outliers,
-          ot.lev = outliers.level,
-          control = robust.control)
-        }
-        dates <- as.Date(names(fit.classic.size))
-        
-        cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
-      },
-      dt.split = dat.split,
-      formula = formula,
-      ot  = outliers,
-      ot.lvl = outliers.level,
-      robust.control = robust.control)
+      dat.list <- lapply(type, function(model, dt.split, formula, dependent, outliers.method, outliers.level, robust.control) {
+                           fun <- switch(model,
+                                         ols = "lm",
+                                         ls  = "lm",
+                                         mm  = "lmrobdetMM",
+                                         robust = "lmrobdetMM",
+                                         NULL)
+                           
+                           if (is.null(fun)) {
+                             stop(paste("Invalid model type:", model))
+                           }
+                          
+                           if (fun == "lm") {
+                             coefs <- lapply(dt.split, function(dt, fm, dependent, ot, ot.lev) {
+                                               x <- na.omit(dt[, ..cols])
+                                               x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
+                                               coef(lm(formula, data = x))
+                                             },
+                                             fm = formula,
+                                             dependent = dependent,
+                                             ot  = outliers.method,
+                                             ot.lev = outliers.level)
+                           } else {
+                             coefs <- lapply(dt.split, function(dt, fun, fm, dependent, ot, ot.lev, control) {
+                                               x <- na.omit(dt)
+                                               x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
+                                               coef(do.call(fun, list(formula = fm, data = x, control = control)))
+                                             },
+                                             fun = fun,
+                                             fm = formula,
+                                             dependent = dependent,
+                                             ot  = outliers.method,
+                                             ot.lev = outliers.level,
+                                             control = robust.control)
+                           }
+                           dates <- as.Date(names(coefs))
+                          
+                           cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
+                         },
+                         dt.split = dat.split,
+                         formula = formula,
+                         dependent = dependent,
+                         outliers.method  = outliers.method,
+                         outliers.level = outliers.level,
+                         robust.control = robust.control)
     }
   }
   
@@ -187,16 +205,16 @@ winsorize <- function(x, level, vars) {
     x[[vars[i]]] <- ifelse(x[[vars[i]]] < q[1], q[1], x[[vars[i]]])
     x[[vars[i]]] <- ifelse(x[[vars[i]]] > q[2], q[2], x[[vars[i]]])
   }
-  
+
   return(x)
 }
 
 trim <- function(x, vars, level) {
   for (i in 1:length(vars)) {
     q <- quantile(x[[vars[i]]], c(level, 1 - level))
-    x <- x[get(vars[i]) > q[1] & get(vars[i]) < q[2]]
+    x <- x[x[[vars[i]]] > q[1] & x[[vars[i]]] < q[2]]
   }
-  
+
   return(x)
 }
 
