@@ -32,7 +32,20 @@ applyFilter <- function(x, type) {
   return(x)
 }
 
-ff92filter <- function(x) {
+#' Filtering data using methods detailed in Fama French (1992)
+#' 
+#' @importFrom data.table ':=' as.data.table
+#' @importFrom lubridate year
+#'
+#' @export ff92Filter
+#' @rdname ff92Filter
+#'
+#' @param x An eapr object
+#'
+#' @return A filtered EAPR object using the same filtering methods used in Fama French (1992)
+#' 
+
+ff92Filter <- function(x) {
   # valid.subset <- x$ccm %>%
   #   group_by(permno, rebalance_date) %>%
   #   mutate(month = month(date),
