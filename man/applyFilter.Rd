@@ -2,15 +2,18 @@
 % Please edit documentation in R/data_filters.R
 \name{applyFilter}
 \alias{applyFilter}
-\title{applyFilter}
+\title{Filtering data}
 \usage{
 applyFilter(x, type)
 }
 \arguments{
 \item{x}{An eapr object}
 
-\item{type}{Filter or list of filters to apply to data}
+\item{type}{Filter or list of filters to apply to dataset. Currently, only the filter used in Fama French 1992 is implemented.}
+}
+\value{
+A filtered EAPR object
 }
 \description{
-Implementation of filter outlined in Fama and French (1992).
+Filtering data
 }

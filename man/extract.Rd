@@ -34,6 +34,9 @@ extract(username, src = "wrds", fundamental.var = c("ME", "BE",
 
 \item{min.prec}{minimum number of preceding periods necessary to compute technical variables}
 }
+\value{
+An eapr object containing the merged crsp and compustat data (ccm), the time series of returns for the index and each security (market.dt),
+}
 \description{
 This function accesses the wrds database and returns
 }

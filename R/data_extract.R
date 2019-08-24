@@ -9,7 +9,10 @@
 #' @importFrom purrr reduce
 #' @importFrom lubridate ceiling_date '%m-%' '%m+%' year days years
 #' @importFrom RPostgres dbClearResult dbConnect dbFetch dbSendQuery Postgres
-#'
+#' 
+#' @export extract
+#' @rdname extract
+#' 
 #' @param username username for database
 #' @param src source of database
 #' @param fundamental.var fundamental variables to be computed/extracted
@@ -21,8 +24,9 @@
 #' @param drop.excess Drop variables used to calculate fundamentals and technicals
 #' @param preceding number of preceding periods to consider for technical variables
 #' @param min.prec minimum number of preceding periods necessary to compute technical variables
-#'
-#' @export
+#' 
+#' @return An eapr object containing the merged crsp and compustat data (ccm), the time series of returns for the index and each security (market.dt), 
+#' 
 
 extract <- function(username,
                     src = "wrds",
@@ -237,7 +241,7 @@ getMonthlyData.wrds <- function(conn, fundamental.var, technical.var, from, to, 
   to.ind <- to.crsp
 
   # Obtain returns for CRSP value-weighted index
-  SQL.ind = paste("SELECT date, vwretd AS ind_ret, LAG(vwretd, 1) OVER(ORDER BY date) as lag_ind_ret
+  SQL.ind = paste("SELECT date, vwretd AS vwind_ret, LAG(vwretd, 1) OVER(ORDER BY date) as lag_vwind_ret
                    FROM crsp.msi
                    WHERE date BETWEEN",  from.ind,
                   "AND", to.ind,
