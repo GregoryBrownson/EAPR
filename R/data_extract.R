@@ -434,7 +434,7 @@ getFundamentals <- function(comp, crsp, variables, rebalance.freq) {
   # keep.crsp <- as.vector(unlist(var.crsp[intersect(names(var.crsp), variables)]))
 
   var.names <- list(BE      = c("book_equity", "log_book_equity"),
-                    ME      = c("market_equity", "log_market_equity", "rDate_market_equity", "log_rDate_market_equity"),
+                    ME      = c("market_equity", "log_market_equity", "size", "log_size"),
                     "BE/ME" = c("book_market", "log_book_market"),
                     "A/BE"  = c("asset_book", "log_asset_book"),
                     "A/ME"  = c("asset_market", "log_asset_market"),
