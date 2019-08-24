@@ -1,19 +1,21 @@
-#' Implementation of filter outlined in Fama and French (1992).
+# Implementation of some generic filters used for asset pricing in the past.
+#' Filtering data
 #' 
 #' @importFrom data.table ':=' as.data.table
 #' @importFrom lubridate year
 #'
-#' @title applyFilter
+#' @export applyFilter
+#' @rdname applyFilter
 #'
 #' @param x An eapr object
-#' @param type Filter or list of filters to apply to data
+#' @param type Filter or list of filters to apply to dataset. Currently, only the filter used in Fama French 1992 is implemented.
 #'
-#' @export
-#'
+#' @return A filtered EAPR object
+#' 
 
 applyFilter <- function(x, type) {
   
-  valid.filters <- c("ff")
+  valid.filters <- c("ff92")
   if (!all(type %in% valid.filters)) {
     invalid.filters <- type[!(type %in% valid.filters)]
     if (length(invalid.filters) == 1) {
@@ -30,7 +32,7 @@ applyFilter <- function(x, type) {
   return(x)
 }
 
-filter.ff92 <- function(x) {
+ff92filter <- function(x) {
   # valid.subset <- x$ccm %>%
   #   group_by(permno, rebalance_date) %>%
   #   mutate(month = month(date),
@@ -40,10 +42,10 @@ filter.ff92 <- function(x) {
   #   ungroup %>%
   #   as.data.table
   
-  dt <- x$ccm[, .(date, rebalance_date, permno, is_financial)]
-  dt[, c("has_Jun", "has_Dec") := list(any(month(date) == 6), any(month(date) == 12)), by = list(rebalance_date, permno)]
-  dt <- dt[has_Jun == TRUE & has_Dec == TRUE & is_financial == 0]
-  dt[, rebalance_date := rebalance_date + years(1)]
+  dt <- x$ccm[, .(date, rebalance_date, permno, log_rDate_market_equity, is_financial)]
+  dt[, has_Jun := !is.null(log_rDate_market_equity), by = list(rebalance_date, permno)]
+  dt <- dt[has_Jun == TRUE & is_financial == 0]
+  dt[, rebalance_date := rebalance_date]
   
   dt <- unique(dt[, .(permno, rebalance_date)])
   
@@ -71,7 +73,9 @@ filter.ff92 <- function(x) {
   x$ccm <- merge(x$ccm, unique(dt[, .(permno, rebalance_date)]), by = c("permno", "rebalance_date"))
   
   x$market.dt <- x$market.dt[permno %in% unique(x$ccm$permno)]
+  
+  cols <- intersect(c("book_market", "asset_market", "earnings_price"), colnames(x$ccm))
 
-  return(na.omit(x, cols = c("book_equity", "asset_market", "earnings_price")))
+  return(na.omit(x, cols = cols))
 }
 
