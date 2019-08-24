@@ -34,12 +34,12 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
   }
 
   # Check if variables are in data table
-  stopifnot(all(on %in% x$ccm))
+  stopifnot(all(on %in% colnames(x$ccm)))
 
   # Check if the value for q is valid
   if (length(q) == 1) {
-    stopifnot(q >= 1)
-    q <- seq(from = 0.0, to = 1.0, length.out = q + 2)
+    stopifnot(q >= 2)
+    q <- seq(from = 0.0, to = 1.0, length.out = q + 1)
   } else if (is.numeric(q)) {
     stopifnot(all(q >= 0.0 & q <= 1.0))
     q <- q[order(q)]
@@ -50,7 +50,7 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
   
   cols <- c("rebalance_date", "permno", "exchange_code", on)
   
-  start_month <- unique(month(x$ccm$rebalance_date))
+  start_month <- unique(month(x$ccm$rebalance_date)) + 1
   
   dat.split <- split(x$ccm[month(date) == start_month, ..cols], x$ccm[month(date) == start_month]$rebalance_date)
   
