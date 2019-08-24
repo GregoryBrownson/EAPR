@@ -2,9 +2,9 @@
 
 export(applyFilter)
 export(extract)
+export(fama_macbeth)
 export(quantilePortfolio)
 export(write.eapr)
-import(dplyr)
 importFrom(RPostgres,Postgres)
 importFrom(RPostgres,dbClearResult)
 importFrom(RPostgres,dbConnect)
