@@ -10,7 +10,8 @@
 #' @param q Either a vector of percentile cut points or the number of quantiles
 #' to compute. If the latter, quantiles are computed using evenly spaced percentile
 #' cut points.
-#' @param on Variable or variables to sort on (max of 2).
+#' @param on.x First variable to sort on.
+#' @param on.y Second variable to sort on. This option is ignored if 'univariate' sorting is selected.
 #' @param sort Type of sort for portfolios. Options are univariate, bivariate.ind
 #' (independent bivariate), and bivariate.dep (dependent bivariate) sorts.
 #' 
@@ -18,7 +19,7 @@
 
 # TODO: Customize the variables to allow names such as 'Size' and 'Beta' instead of actual variable names
 
-quantilePortfolio <- function(x, q, on, sort = "univariate") {
+quantilePortfolio <- function(x, q, on.x, on.y = NULL, sort = "univariate") {
   # x should be eapr object
   stopifnot(class(x) == "eapr")
 
@@ -28,9 +29,15 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
 
   # Check if there are the correct number of variables
   if (sort == "univariate") {
-    stopifnot(length(on) == 1)
+    if (is.null(on.y)) {
+      on <- on.x
+    } else {
+      sort <- "bivariate.ind"
+      on <- c(on.x, on.y)
+    }
   } else {
-    stopifnot(length(on) == 2)
+    stopifnot(!is.null(on.y))
+    on <- c(on.x, on.y)
   }
 
   # Check if variables are in data table
@@ -103,20 +110,20 @@ quantilePortfolio <- function(x, q, on, sort = "univariate") {
 
 #' @rdname quantilePortfolio
 #' @export
-quartilePortfolio <- function(x, on, sort = "univariate") {
-  return(quantilePortfolio(x, 4, on, sort))
+quartilePortfolio <- function(x, on.x, on.y = NULL, sort = "univariate") {
+  return(quantilePortfolio(x, 4, on.x, on.y, sort))
 }
 
 #' @rdname quantilePortfolio
 #' @export
-quintilePortfolio <- function(x, on, sort = "univariate") {
-  return(quantilePortfolio(x, 5, on, sort))
+quintilePortfolio <- function(x, on.x, on.y = NULL, sort = "univariate") {
+  return(quantilePortfolio(x, 5, on.x, on.y, sort))
 }
 
 #' @rdname quantilePortfolio
 #' @export
-decilePortfolio <- function(x, on, sort = "univariate") {
-  return(quantilePortfolio(x, 10, on, sort))
+decilePortfolio <- function(x, on.x, on.y = NULL, sort = "univariate") {
+  return(quantilePortfolio(x, 10, on.x, on.y, sort))
 }
 
 # Calculates post-ranking beta for returns on sorted portfolios, as described in Fama and French (1992)
