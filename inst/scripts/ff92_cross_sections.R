@@ -19,20 +19,20 @@ eapr <- EAPR::extract("gsb25")
 
 dat.filtered <- EAPR::filter.ff92(eapr)
 
-size.cs <- EAPR::fama_macbeth(adj_ret * 100 ~ log_rDate_market_equity, x = dat.filtered)
+size.cs <- EAPR::fama_macbeth(adj_ret * 100 ~ log_size, x = dat.filtered)
 
 ## SIZE
 
 # LS and Robust regressions
 fit.classic.size <- lapply(data.split, function(x) {
-  x <- na.omit(x, c("adj_ret", "log_rDate_market_equity"))
-  coef(lm(adj_ret * 100 ~ log_rDate_market_equity, data = x))
+  x <- na.omit(x, c("adj_ret", "log_size"))
+  coef(lm(adj_ret * 100 ~ log_size, data = x))
 })
 
 fit.robust.size <- lapply(data.split, function(x) {
-  x <- na.omit(x, c("adj_ret", "log_rDate_market_equity"))
+  x <- na.omit(x, c("adj_ret", "log_size"))
   control <- lmrobdet.control(efficiency = 0.99)
-  unname(coef(lmrobdetMM(adj_ret * 100 ~ log_rDate_market_equity, data = x, control = control)))
+  unname(coef(lmrobdetMM(adj_ret * 100 ~ log_size, data = x, control = control)))
 })
 
 dates <- as.Date(names(fit.classic.size))
@@ -405,7 +405,7 @@ dev.off()
 # })
 # 
 # fit.robust.leverage <- lapply(data.split, function(x) {
-#   x <- na.omit(x, c("adj_ret", "log_rDate_market_equity"))
+#   x <- na.omit(x, c("adj_ret", "log_size"))
 #   control <- lmrobdet.control(efficiency = 0.99)
 #   unname(coef(lmrobdetMM(adj_ret * 100 ~ log_asset_market + log_asset_book, data = x, control = control)))
 # })

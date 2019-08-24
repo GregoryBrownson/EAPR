@@ -55,8 +55,8 @@ ff92Filter <- function(x) {
   #   ungroup %>%
   #   as.data.table
   
-  dt <- x$ccm[, .(date, rebalance_date, permno, log_rDate_market_equity, is_financial)]
-  dt[, has_Jun := !is.null(log_rDate_market_equity), by = list(rebalance_date, permno)]
+  dt <- x$ccm[, .(date, rebalance_date, permno, log_size, is_financial)]
+  dt[, has_Jun := !is.null(log_size), by = list(rebalance_date, permno)]
   dt <- dt[has_Jun == TRUE & is_financial == 0]
   dt[, rebalance_date := rebalance_date]
   
