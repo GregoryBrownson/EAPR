@@ -44,7 +44,7 @@ Here is an explanation of each parameter:
 ## Quantile Portfolios
 
 ## Replicating Fama French 1992
-In the future, I will be adding a script to provide a practical example of EAPR's use cases by replicating some of the methodology from Dr. Eugene Fama and Dr. Kenneth French's 1992 paper, "The Cross-Section of Expected Stock Returns."
+I will post a link to a script which will provide a practical example of EAPR's usability by replicating some of the methodology from Dr. Eugene Fama and Dr. Kenneth French's 1992 paper, "The Cross-Section of Expected Stock Returns."
 
 ## Reporting bugs and suggested features
 To help improve our package, please follow the following instructions for submitting bug reports and/or feature requests.
