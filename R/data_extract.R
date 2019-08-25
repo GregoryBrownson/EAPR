@@ -16,7 +16,6 @@
 #' @param username username for database
 #' @param src source of database
 #' @param fundamental.var fundamental variables to be computed/extracted
-#' @param technical.var technical variables to be computed/extracted
 #' @param from starting date
 #' @param to end date
 #' @param periodicity frequency of the data
@@ -31,7 +30,7 @@
 extract <- function(username,
                     src = "wrds",
                     fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-                    technical.var   = c("PreBeta"),
+                    #technical.var   = c("PreBeta"),
                     from            = as.Date("1963-07-31"),
                     to              = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
                     # filter          = 'none', # Options will be raw data, fama french, liquidity. May allow selection of multiple
@@ -47,7 +46,7 @@ extract <- function(username,
   data <- do.call(paste('extract.', src, sep = ''),
                   list(username = username,
                        fundamental.var = fundamental.var,
-                       technical.var = technical.var,
+                       #technical.var = technical.var,
                        from = from,
                        to = to,
                        #filter = filter,
@@ -62,7 +61,7 @@ extract <- function(username,
 
 extract.wrds <- function(username,
                          fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-                         technical.var   = c("PreBeta", "PostBeta"),
+                         #technical.var   = c("PreBeta", "PostBeta"),
                          from            = as.Date("1963-07-31"),
                          to              = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
                          # filter          = 'none', # Options will be raw data, fama french, liquidity. May allow selection of multiple
@@ -108,7 +107,7 @@ cat("Extracting data...this could take a while\n")
     x <- list()
     print('Weekly periodicity of returns not implemented yet!')
   } else {
-    x <- getMonthlyData.wrds(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
+    x <- getMonthlyData.wrds(conn, fundamental.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
   }
   
   x$periodicity <- periodicity
@@ -119,17 +118,17 @@ cat("Extracting data...this could take a while\n")
   return(x)
 }
 
-getDailyData.wrds <- function(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
+getDailyData.wrds <- function(conn, fundamental.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   # TODO: Method to extract daily data
   stop("Daily data not yet supported!")
 }
 
-getWeeklyData.wrds <- function(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
+getWeeklyData.wrds <- function(conn, fundamental.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   # TODO: Method to extract weekly data
   stop("Weekly data not yet supported!")
 }
 
-getMonthlyData.wrds <- function(conn, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
+getMonthlyData.wrds <- function(conn, fundamental.var, from, to, filter, rebalance.freq, drop.excess, preceding, min.prec) {
   x <- list()
 
   # # Check filter
