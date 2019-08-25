@@ -1,9 +1,9 @@
 # EAPR
 
 This github repository contains the development of an R package for supporting empirical asset pricing research, or EAPR for short. To install the package, execute the following command:
-'''
+```
 devtools::install_github("GregoryBrownson/EAPR")
-'''
+```
 
 ## Introduction
 A major effort in empirical asset pricing research (EAPR) is the initial stage of gathering the data, cleaning and filtering it, and then formatting it in a way that simplifies further statistical analysis. This process, when done properly, takes a large portion of a researcher’s time when it would be better spent on doing the actual analysis. By developing an EAPR package that automates much of the data import, cleaning, filtering and standardization process, a substantial fraction of the researcher’s time will be saved, while essentially standardizing a significant portion of the data gathering and management aspect of asset pricing research. We expect this last aspect to support the reproducibility of EAPR research by academics and financial professionals. Our over-arching goal is to make the EAPR package an ideal support tool for the wide range of asset pricing research as described in Ball, Engle and Murray (2016). The initial version of the package will work very effectively with asset price, returns and factors (exposures) data delivered by Wharton Research Data Services (WRDS), a major source of empirical data for academic asset pricing researchers. The software tools to extract data from WRDS will be designed to be easily adapted to use with other data sources.
@@ -12,8 +12,8 @@ A major effort in empirical asset pricing research (EAPR) is the initial stage o
 In order to use the package, you will need an account with WRDS and access to the The Center for Research in Security Prices (CRSP) equities database, the S&P Capital IQ Compustat database, and the CRSP/Compustat merged database. If you have this access, then you will need to set up the **pgpass** file on your computer. Please go to [this page](https://wrds-www.wharton.upenn.edu/pages/support/programming-wrds/programming-r/r-from-your-computer/) on the WRDS website and follow the instructions under the section titled "Initial Setup - The .pgpass / pgpass.conf File." If you are a Windows user, typing **%APPDATA%** may bring you to the ".../AppData/Roaming" folder. If this happens then create the folder 'postgresql' there and follow the rest of the instructions for creating the **pgpass.conf** file. For Linux users, be sure to put the **.pgpass** file in your local user directory, not in the root directory. Once the package is installed and the **pgpass** file is created, then we are ready to extract the data and begin our analysis.
 
 ## Extracting the data
-Instead of having to use SQL or the online interface to extract data, we have created a single method which will extract the data from WRDS databases, compute the variables, and return an object containing a data.table of the results. The function which does all this is simply called '''extract'''. However, the run time of this function is fairly long due to downloading a large dataset and processing power required to compute each variable. The function and its parameters are
-'''
+Instead of having to use SQL or the online interface to extract data, we have created a single method which will extract the data from WRDS databases, compute the variables, and return an object containing a data.table of the results. The function which does all this is simply called `extract`. However, the run time of this function is fairly long due to downloading a large dataset and processing power required to compute each variable. The function and its parameters are
+```
   extract(username,
           src = "wrds", # Only interfaces with WRDS, but we are looking into other options
           fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
@@ -24,7 +24,7 @@ Instead of having to use SQL or the online interface to extract data, we have cr
           drop.excess     = T, # Boolean to drop extra variables extracted from wrds database
           preceding       = 60,
           min.prec        = 0.4)
-'''
+```
 Here is an explanation of each parameter:
 - **username**: Username for database
 - **src**: Source of database
