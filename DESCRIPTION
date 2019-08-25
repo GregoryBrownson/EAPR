@@ -11,5 +11,6 @@ Imports: chron, data.table, datetimeutils, dplyr, lubridate, purrr, RobStatTM, R
 Suggests: knitr
 License: GPL-3
 RoxygenNote: 6.1.1
+LazyData: yes
 Encoding: UTF-8
-LazyData: true
+VignetteBuilder: knitr
