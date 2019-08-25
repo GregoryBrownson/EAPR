@@ -1,7 +1,7 @@
 #' Fama MacBeth Cross-Sectional Regressions
 #'
-#' @export fama_macbeth
-#' @rdname fama_macbeth
+#' @export FamaMacbeth
+#' @rdname FamaMacbeth
 #'
 #' @description Computes cross-sectional regressions for each period 
 #'
@@ -22,7 +22,7 @@
 #' 
 #' @author Gregory Brownson, \email{gregory.brownson@gmail.com}
 
-fama_macbeth <- function(formula, x, type = "ols", outliers.method = "winsorize", outliers.level = 0.005, robust.control = NULL) {
+FamaMacbeth <- function(formula, x, type = "ols", outliers.method = "winsorize", outliers.level = 0.005, robust.control = NULL) {
   if (any(type != "ols") & is.null(robust.control)) {
     robust.control <- lmrobdet.control(efficiency = 0.99, family = "optimal")
   }
@@ -190,7 +190,7 @@ fama_macbeth <- function(formula, x, type = "ols", outliers.method = "winsorize"
   
   names(dat.list) <-  type
   
-  class(dat.list) <- "fama_macbeth"
+  class(dat.list) <- "FamaMacbeth"
   
   return(dat.list)
 }
@@ -214,10 +214,16 @@ trim <- function(x, vars, level) {
   return(x)
 }
 
-summary.fama_macbeth <- function(x) {
+#' @rdname FamaMacbeth
+#' @export
+
+summary.FamaMacbeth <- function(x) {
   
 }
 
-plot.fama_macbeth <- function(x) {
+#' @rdname FamaMacbeth
+#' @export
+
+plot.FamaMacbeth <- function(x) {
   
 }

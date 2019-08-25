@@ -126,9 +126,7 @@ decilePortfolio <- function(x, on.x, on.y = NULL, sort = "univariate") {
   return(quantilePortfolio(x, 10, on.x, on.y, sort))
 }
 
-# Calculates post-ranking beta for returns on sorted portfolios, as described in Fama and French (1992)
-
-portfolio_means.eapr <- function(x, p, response, excess = "vw_index") {
+portfolio_mean.eapr <- function(x, p, response, excess = "vw_index") {
   stopifnot(class(p) == "eaprPortfolio")
   
   cols <- c("rebalance_date", "permno", p$on, response)

@@ -6,10 +6,10 @@
 \usage{
 extract(username, src = "wrds", fundamental.var = c("ME", "BE",
   "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-  technical.var = c("PreBeta"), from = as.Date("1963-07-31"),
-  to = as.Date(paste0(format(Sys.Date() - years(1), "\%Y"), "-12-31")),
-  periodicity = "M", rebalance.freq = "A", drop.excess = T,
-  preceding = 60, min.prec = 0.4)
+  from = as.Date("1963-07-31"), to = as.Date(paste0(format(Sys.Date() -
+  years(1), "\%Y"), "-12-31")), periodicity = "M",
+  rebalance.freq = "A", drop.excess = T, preceding = 60,
+  min.prec = 0.4)
 }
 \arguments{
 \item{username}{username for database}
@@ -17,8 +17,6 @@ extract(username, src = "wrds", fundamental.var = c("ME", "BE",
 \item{src}{source of database}
 
 \item{fundamental.var}{fundamental variables to be computed/extracted}
-
-\item{technical.var}{technical variables to be computed/extracted}
 
 \item{from}{starting date}
 

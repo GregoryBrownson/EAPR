@@ -7,13 +7,13 @@
 \alias{decilePortfolio}
 \title{Quantile portfolio formation}
 \usage{
-quantilePortfolio(x, q, on, sort = "univariate")
+quantilePortfolio(x, q, on.x, on.y = NULL, sort = "univariate")
 
-quartilePortfolio(x, on, sort = "univariate")
+quartilePortfolio(x, on.x, on.y = NULL, sort = "univariate")
 
-quintilePortfolio(x, on, sort = "univariate")
+quintilePortfolio(x, on.x, on.y = NULL, sort = "univariate")
 
-decilePortfolio(x, on, sort = "univariate")
+decilePortfolio(x, on.x, on.y = NULL, sort = "univariate")
 }
 \arguments{
 \item{x}{An eapr object which contains the time series of variables for all
@@ -23,7 +23,9 @@ stocks.}
 to compute. If the latter, quantiles are computed using evenly spaced percentile
 cut points.}
 
-\item{on}{Variable or variables to sort on (max of 2).}
+\item{on.x}{First variable to sort on.}
+
+\item{on.y}{Second variable to sort on. This option is ignored if 'univariate' sorting is selected.}
 
 \item{sort}{Type of sort for portfolios. Options are univariate, bivariate.ind
 (independent bivariate), and bivariate.dep (dependent bivariate) sorts.}
