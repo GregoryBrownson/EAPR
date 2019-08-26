@@ -18,7 +18,7 @@ Instead of having to use SQL or the online interface to extract data, we have cr
           src = "wrds", # Only interfaces with WRDS, but we are looking into other options
           fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
           from            = as.Date("1963-07-31"), # Default start date
-          to              = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
+          to              = lubridate::floor_date(Sys.Date(), "year") - lubridate::days(1), # Default end date (December 31st of last year)
           periodicity     = 'M', # Options will be D - daily, W - weekly, M - Monthly (only monthly available)
           rebalance.freq  = 'A', # Options will be A - annual, S - semiannual, Q - quarterly (only annual available)
           drop.excess     = T, # Boolean to drop extra variables extracted from wrds database
@@ -33,15 +33,22 @@ Here is an explanation of each parameter:
 - **to**: End date for time series
 - **periodicity**: frequency of the data
 - **rebalance.freq**: How often portfolios are rebalanced
-- **drop.excess**: Drop variables used to calculate fundamentals and technicals
-- **preceding**: Number of preceding periods to consider for technical variables
-- **min.prec**: Multiply by preceding to determine the minimum number of preceding periods necessary to compute technical variables
+- **drop.excess**: Boolean option to drop the variables extracted from CRSP and Compustat used to compute variables (e.g. Redemption value of preferred stock, Total assets, etc.)
+- **preceding**: Number of preceding periods to consider for technical variables (e.g. Beta)
+- **min.prec**: Multiply by **preceding** to determine the minimum number of preceding periods available for calculating technical variables
 
 ## Filters
+EAPR will provide commonly used filtering methods for cleaning data. The `ff92Filter()` (filtering method used by Fama and French in their 1992 paper) is currently the only filter implemented at this point and is simple to use:
+```
+ff92Filter(x)
+```
+where x is an eapr object. Later filters will follow this format and will include other tuning parameters as necessary.
 
 ## Fama MacBeth Regressions
 
+
 ## Quantile Portfolios
+
 
 ## Replicating Fama French 1992
 I will post a link to a script which will provide a practical example of EAPR's usability by replicating some of the methodology from Dr. Eugene Fama and Dr. Kenneth French's 1992 paper, "The Cross-Section of Expected Stock Returns."
