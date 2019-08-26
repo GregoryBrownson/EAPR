@@ -19,4 +19,4 @@ fits <- lapply(ccm.date, function(dt) {
           lm(adj_ret ~ log_market_equity - 1, data = dt, na.action = na.omit)
         })
 
-coefs <- unlist(lapply(fits, function(f) { unname(coef(f)) }))
+coefs <- unlist(lapply(fits, function(f) unname(coef(f)) ))

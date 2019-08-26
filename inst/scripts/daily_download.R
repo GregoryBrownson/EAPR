@@ -2,23 +2,24 @@ library(data.table)
 library(lubridate)
 library(RPostgres)
 
-username = "gsb25" # WRDS USERNAME
+username <- "gsb25" # WRDS USERNAME
 
 from <- as.Date("2016-1-1")
 
 conn <- dbConnect(Postgres(),
-                  host = 'wrds-pgdata.wharton.upenn.edu',
+                  host = "wrds-pgdata.wharton.upenn.edu",
                   port = 9737,
-                  dbname  = 'wrds',
+                  dbname  = "wrds",
                   user    = username,
-                  sslmode = 'require')
+                  sslmode = "require")
 
 from.crsp <- paste0("'", from, "'")
 to.crsp <- paste0("'", to.crsp, "'")
 
 # Extract CRSP data
-SQL.crsp <- paste("SELECT a.permno, a.permco, a.date, b.shrcd AS share_code, b.exchcd AS exchange_code,
-                   a.ret, a.retx, a.prc AS price, a.vol AS volume, a.shrout AS shares_out,
+SQL.crsp <- paste("SELECT a.permno, a.permco, a.date, b.shrcd AS share_code,
+                   b.exchcd AS exchange_code, a.ret, a.retx, a.prc AS price,
+                   a.vol AS volume, a.shrout AS shares_out,
                    CASE WHEN (a.hsiccd BETWEEN 6000 and 6999) THEN 1 ELSE 0 END AS is_financial
                    FROM crsp.dsf AS a
                    LEFT join crsp.msenames AS b
@@ -34,7 +35,7 @@ res <- dbSendQuery(conn, SQL.crsp)
 crsp <- data.table(dbFetch(res))
 dbClearResult(res)
 
-crsp = na.omit(crsp, cols = c("ret", "retx"))
+crsp <- na.omit(crsp, cols = c("ret", "retx"))
 
 # Extract delisted return
 SQL.delret <- "SELECT permno, dlret AS delist_ret, dlstdt AS date
@@ -67,7 +68,7 @@ from.ind <- paste0("'", from %m-% months(preceding + 1), "'")
 to.ind <- to.crsp
 
 # Obtain returns for CRSP value-weighted index
-SQL.ind = paste("SELECT date, vwretd AS ind_ret, LAG(vwretd, 1) OVER(ORDER BY date) as lag_ind_ret
+SQL.ind <- paste("SELECT date, vwretd AS ind_ret, LAG(vwretd, 1) OVER(ORDER BY date) as lag_ind_ret
                    FROM crsp.msi
                    WHERE date BETWEEN",  from.ind,
                 "AND", to.ind,

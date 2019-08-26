@@ -7,5 +7,5 @@
 #' @export
 
 write.eapr <- function(x) {
-
+    
 }

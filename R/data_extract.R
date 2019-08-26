@@ -30,26 +30,22 @@
 extract <- function(username,
                     src = "wrds",
                     fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-                    #technical.var   = c("PreBeta"),
                     from            = as.Date("1963-07-31"),
-                    to              = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
-                    # filter          = 'none', # Options will be raw data, fama french, liquidity. May allow selection of multiple
-                    periodicity     = 'M', # Options will be D - daily, W - weekly, M - Monthly
-                    rebalance.freq  = 'A', # Options will be A - annually, S - semiannually, Q - quarterly
-                    drop.excess     = T, # Boolean to drop extra variables extracted from wrds database
+                    to              = lubridate::floor_date(Sys.Date(), "year") - lubridate::days(1),
+                    periodicity     = "M",
+                    rebalance.freq  = "A",
+                    drop.excess     = T,
                     preceding       = 60,
                     min.prec        = 0.4) {
   if (src != "wrds") {
     stop("Sorry, only extraction from the wrds database is implemented right now. Please set the 'src' variable to 'wrds'")
   }
 
-  data <- do.call(paste('extract.', src, sep = ''),
+  data <- do.call(paste("extract.", src, sep = ""),
                   list(username = username,
                        fundamental.var = fundamental.var,
-                       #technical.var = technical.var,
                        from = from,
                        to = to,
-                       #filter = filter,
                        periodicity = periodicity,
                        rebalance.freq = rebalance.freq,
                        drop.excess = drop.excess,
@@ -61,51 +57,49 @@ extract <- function(username,
 
 extract.wrds <- function(username,
                          fundamental.var = c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P"),
-                         #technical.var   = c("PreBeta", "PostBeta"),
                          from            = as.Date("1963-07-31"),
-                         to              = as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-12-31")),
-                         # filter          = 'none', # Options will be raw data, fama french, liquidity. May allow selection of multiple
-                         periodicity     = 'M', # Options will be D - daily, W - weekly, M - Monthly
-                         rebalance.freq  = 'A', # Options will be A - annually, S - semiannually, Q - quarterly
-                         drop.excess     = T, # Boolean to drop extra fundamental.var extracted from wrds database
+                         to              = lubridate::floor_date(Sys.Date()) - lubridate::days(1),
+                         periodicity     = "M",
+                         rebalance.freq  = "A",
+                         drop.excess     = T,
                          preceding       = 60,
                          min.prec        = 24) {
 cat("Extracting data...this could take a while\n")
 
   # Connect to wrds database
   conn <- dbConnect(Postgres(),
-                    host = 'wrds-pgdata.wharton.upenn.edu',
+                    host = "wrds-pgdata.wharton.upenn.edu",
                     port = 9737,
-                    dbname  = 'wrds',
+                    dbname  = "wrds",
                     user    = username,
-                    sslmode = 'require')
+                    sslmode = "require")
 
   valid.fundamental.var <- c("ME", "BE", "BE/ME", "A/ME", "A/BE", "OP", "INV", "E/P", "CF/P", "D/P")
 
   # Check for incorrect values
-  stopifnot(any(periodicity %in% c('D', 'W', 'M')))
-  stopifnot(any(rebalance.freq %in% c('Q', 'S', 'A')))
+  stopifnot(any(periodicity %in% c("D", "W", "M")))
+  stopifnot(any(rebalance.freq %in% c("Q", "S", "A")))
 
   # Adjust time frame based on rebalancing frequency
-  if (rebalance.freq == 'A') {
+  if (rebalance.freq == "A") {
     from <- max(ceiling_date(from %m-% months(6), "year") %m-% months(6), as.Date("1963-07-01"))
     to <- min(ceiling_date(to %m-% months(6), "year") - days(1), as.Date(paste0(format(Sys.Date() - years(1), "%Y"),"-07-01")))
-  } else if (rebalance.freq == 'S') {
+  } else if (rebalance.freq == "S") {
     # TODO: Adjusted time frame for Semiannual rebalancing
-    print('Semiannual rebalancing not implemented yet!')
+    stop("Semiannual rebalancing not implemented yet!")
   } else {
     # TODO: Adjusted time frame for Quarterly rebalancing
-    print('Quarterly rebalancing not implemented yet!')
+    stop("Quarterly rebalancing not implemented yet!")
   }
 
-  if (periodicity == 'D') {
+  if (periodicity == "D") {
     # x <- getDailyData.wrds(wrds, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
     x <- list()
-    print('Daily periodicity of returns not implemented yet!')
-  } else if (periodicity == 'W') {
+    stop("Daily periodicity of returns not implemented yet!")
+  } else if (periodicity == "W") {
     # x <- getWeeklyData.wrds(wrds, fundamental.var, technical.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
     x <- list()
-    print('Weekly periodicity of returns not implemented yet!')
+    stop("Weekly periodicity of returns not implemented yet!")
   } else {
     x <- getMonthlyData.wrds(conn, fundamental.var, from, to, filter, rebalance.freq, drop.excess, preceding, ceiling(preceding * min.prec))
   }
@@ -148,7 +142,7 @@ getMonthlyData.wrds <- function(conn, fundamental.var, from, to, filter, rebalan
   dict.options.crsp <- list(ME     = c("a.prc AS price", "a.shrout AS shares_out"),
                             "E/P"  = "a.prc AS price")
 
-  options.crsp <- paste(unique(unlist(dict.options.crsp[intersect(names(dict.options.crsp), fundamental.var)])), collapse = ', ')
+  options.crsp <- paste(unique(unlist(dict.options.crsp[intersect(names(dict.options.crsp), fundamental.var)])), collapse = ", ")
 
   from.crsp <- paste0("'", from %m-% months(preceding), "'")
   to.crsp <- paste0("'", to, "'")
@@ -202,10 +196,10 @@ getMonthlyData.wrds <- function(conn, fundamental.var, from, to, filter, rebalan
 
   # Calculate rebalancing dates and extract compustat data
   # Note: Only extraction methods for annual compustat data are implemented
-  if (rebalance.freq == 'A') {
+  if (rebalance.freq == "A") {
     crsp[, rebalance_date := ceiling_date(date %m-% months(6), "year") %m+% months(6) - days(1)]
     comp <- getAnnualCompustat(conn, fundamental.var, from, to)
-  } else if (rebalance.freq == 'S') {
+  } else if (rebalance.freq == "S") {
     crsp[, rebalance_date := ceiling_date(date, "halfyear") - days(1)]
     comp <- getSemiAnnualCompustat(conn, fundamental.var, from, to)
   } else {
@@ -303,10 +297,10 @@ getAnnualCompustat <- function(conn, fundamental.var, from, to) {
                             "CF/P" = c("at AS assets", "ib AS earnings", "txdc as deferred_tax", "dp as depreciation"))
 
   # Obtain names of data which need to be extracted from Compustat
-  options.comp <- paste(unique(unlist(dict.options.comp[intersect(names(dict.options.comp), fundamental.var)])), collapse = ', ')
+  options.comp <- paste(unique(unlist(dict.options.comp[intersect(names(dict.options.comp), fundamental.var)])), collapse = ", ")
 
   if (length(options.comp) > 0) {
-    options.comp <- paste(',', options.comp)
+    options.comp <- paste(",", options.comp)
   }
   
   # Compustat start date
