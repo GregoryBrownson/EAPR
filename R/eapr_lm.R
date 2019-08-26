@@ -201,5 +201,53 @@ print.summary.FamaMacbeth <- function(x) {
 #' @export
 
 plot.FamaMacbeth <- function(x) {
+  n <- colnames(x[[1]])[-1]
+  
+  lapply(n, function(name, dt) {
+    dates <- dt[[1]]$date
+    type <- names(dt)
+    ts <- lapply(type, function(i, dt, var) {
+                   data.table(dt[[i]][, get(var)])
+                 },
+                 dt = dt,
+                 var = name)
     
+    ts <- Reduce(cbind, ts)
+    colnames(ts) <- toupper(type)
+    tsPlot(xts(ts, order.by = dates), yname = name)
+  },
+  dt = x)
+}
+
+# Code taken from FactorAnalytics package.
+# TODO: Customize this function for EAPR
+tsPlot <- function (ts, add.grid = FALSE, layout = NULL, type = "l", yname = "Factor", 
+                    scaleType = "free", stripLeft = TRUE, main = NULL, lwd = 1, 
+                    stripText.cex = 1, axis.cex = 1, color = "black", zeroLine = TRUE) {
+  strip.left = stripLeft
+  strip = !strip.left
+  if (add.grid) {
+    type = c("l", "g")
+  }
+  else {
+    type = type
+  }
+  if (zeroLine) {
+    panel = function(...) {
+      lattice::panel.abline(h = 0, lty = 3)
+      lattice::panel.xyplot(...)
+    }
+  }
+  else {
+    panel = function(...) {
+      lattice::panel.xyplot(...)
+    }
+  }
+  pl = lattice::xyplot(ts, par.strip.text = list(cex = stripText.cex), 
+              type = type, xlab = "", ylab = list(label = yname, cex = stripText.cex), 
+              lwd = lwd, scales = list(y = list(cex = axis.cex, relation = scaleType, 
+                                                rot = 0), x = list(cex = axis.cex)), layout = layout, 
+              main = main, col = color, strip = strip, strip.left = strip.left, 
+              panel = panel)
+  print(pl)
 }
