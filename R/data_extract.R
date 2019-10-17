@@ -64,7 +64,7 @@ extract.wrds <- function(username,
                          drop.excess     = T,
                          preceding       = 60,
                          min.prec        = 24) {
-cat("Extracting data...this could take a while\n")
+  cat("Extracting data...this could take a while\n")
 
   # Connect to wrds database
   conn <- dbConnect(Postgres(),
