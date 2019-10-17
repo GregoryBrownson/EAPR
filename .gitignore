@@ -3,6 +3,7 @@
 *.Rhistory
 *.Rbuildignore
 .Rproj.user
+commit.txt
 
 proposal/*.tex
 proposal/*.gz
