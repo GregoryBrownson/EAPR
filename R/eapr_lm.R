@@ -52,16 +52,16 @@ FamaMacbeth <- function(formula, x, type = "ols", outliers.method = "winsorize",
                 stop(paste("Invalid model type:", type))
             }
             
-            coefs <- lapply(dat.split, function(dt, fun, fm) {
+            fits <- lapply(dat.split, function(dt, fun, fm) {
                 x <- na.omit(dt)
-                coef(do.call(fun, list(formula = fm, data = x)))
+                c(summary(do.call(fun, list(formula = fm, data = x)))$coefficients[, c(1, 3)])
             }, fun = fun, fm = formula)
             
-            dates <- as.Date(names(coefs))
+            dates <- as.Date(names(fits))
             
             dat.list <- list()
             
-            dat.list[[fun]] <- cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
+            dat.list[[fun]] <- cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, fits)))
         } else {
             dat.list <- lapply(type, function(model, dt.split, formula, robust.control) {
                 fun <- switch(model, ols = "lm", ls = "lm", mm = "lmrobdetMM", robust = "lmrobdetMM", NULL)
@@ -71,19 +71,19 @@ FamaMacbeth <- function(formula, x, type = "ols", outliers.method = "winsorize",
                 }
                 
                 if (fun == "lm") {
-                  coefs <- lapply(dt.split, function(dt, fun, fm) {
+                  fits <- lapply(dt.split, function(dt, fun, fm) {
                     x <- na.omit(dt)
-                    coef(lm(formula, data = x))
+                    c(summary(lm(formula, data = x))$coefficients[, c(1, 3)])
                   }, fun = fun, fm = formula)
                 } else {
-                  coefs <- lapply(dt.split, function(dt, fun, fm, control) {
+                  fits <- lapply(dt.split, function(dt, fun, fm, control) {
                     x <- na.omit(dt)
-                    coef(do.call(fun, list(formula = fm, data = x, control = control)))
+                    c(summary(do.call(fun, list(formula = fm, data = x, control = control)))$coefficients[, c(1, 3)])
                   }, fun = fun, fm = formula, control = robust.control)
                 }
-                dates <- as.Date(names(coefs))
+                dates <- as.Date(names(fits))
                 
-                cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
+                cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, fits)))
             }, dt.split = dat.split, formula = formula, robust.control = robust.control)
         }
     } else {
@@ -95,23 +95,23 @@ FamaMacbeth <- function(formula, x, type = "ols", outliers.method = "winsorize",
             }
             
             if (fun == "lm") {
-                coefs <- lapply(dat.split, function(dt, fun, fm, dependent, ot, ot.lev) {
+                fits <- lapply(dat.split, function(dt, fun, fm, dependent, ot, ot.lev) {
                   x <- na.omit(dt)
                   x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
-                  coef(do.call(fun, list(formula = fm, data = x)))
+                  c(summary(do.call(fun, list(formula = fm, data = x)))$coefficients[, c(1, 3)])
                 }, fun = fun, fm = formula, dependent = dependent, ot = outliers.method, ot.lev = outliers.level)
             } else {
-                coefs <- lapply(dat.split, function(dt, fun, fm, dependent, control) {
+                fits <- lapply(dat.split, function(dt, fun, fm, dependent, control) {
                   x <- na.omit(dt)
-                  coef(do.call(fun, list(formula = fm, data = x, control = control)))
+                  c(summary(do.call(fun, list(formula = fm, data = x, control = control)))$coefficients[, c(1, 3)])
                 }, fun = fun, fm = formula, dependent = dependent, control = robust.control)
             }
             
-            dates <- as.Date(names(coefs))
+            dates <- as.Date(names(fits))
             
             dat.list <- list()
             
-            dat.list[[fun]] <- cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
+            dat.list[[fun]] <- cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, fits)))
         } else {
             dat.list <- lapply(type, function(model, dt.split, formula, dependent, outliers.method, outliers.level, robust.control) {
                 fun <- switch(model, ols = "lm", ls = "lm", mm = "lmrobdetMM", robust = "lmrobdetMM", NULL)
@@ -121,20 +121,20 @@ FamaMacbeth <- function(formula, x, type = "ols", outliers.method = "winsorize",
                 }
                 
                 if (fun == "lm") {
-                  coefs <- lapply(dt.split, function(dt, fm, dependent, ot, ot.lev) {
+                  fits <- lapply(dt.split, function(dt, fm, dependent, ot, ot.lev) {
                     x <- na.omit(dt[, ..cols])
                     x <- do.call(ot, list(x = x, level = ot.lev, vars = dependent))
-                    coef(lm(formula, data = x))
+                    c(summary(lm(formula, data = x))$coefficients[, c(1, 3)])
                   }, fm = formula, dependent = dependent, ot = outliers.method, ot.lev = outliers.level)
                 } else {
-                  coefs <- lapply(dt.split, function(dt, fun, fm, dependent, control) {
+                  fits <- lapply(dt.split, function(dt, fun, fm, dependent, control) {
                     x <- na.omit(dt)
-                    coef(do.call(fun, list(formula = fm, data = x, control = control)))
+                    c(summary(do.call(fun, list(formula = fm, data = x, control = control)))$coefficients[, c(1, 3)])
                   }, fun = fun, fm = formula, dependent = dependent, control = robust.control)
                 }
-                dates <- as.Date(names(coefs))
+                dates <- as.Date(names(fits))
                 
-                cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, coefs)))
+                cbind(data.table::data.table(date = dates), data.table::data.table(Reduce(rbind, fits)))
             }, dt.split = dat.split, formula = formula, dependent = dependent, outliers.method = outliers.method, outliers.level = outliers.level, robust.control = robust.control)
         }
     }
@@ -169,10 +169,17 @@ trim <- function(x, vars, level) {
 #' @export
 
 summary.FamaMacbeth <- function(x, adjustment = "Newey-West") {
+  
   means <- lapply(x, function(dt, type) {
-                    standard_error <- apply(dt[, -1], 2, function(col) {
-                                        sqrt(sandwich::lrvar(col, type = type))
-                                      })
+                    if (type == "Newey-West") {
+                      standard_error <- apply(dt[, -1], 2, function(col) {
+                        sqrt(sandwich::lrvar(col, type = type))
+                      })
+                    } else {
+                      standard_error <- apply(dt[, -1], 2, function(col) {
+                        sd(col) / sqrt(sum(!is.na(col)))
+                      })
+                    }
                     
                     mu <- colMeans(dt[, -1])
                     
