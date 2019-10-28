@@ -52,7 +52,7 @@ marketEquity <- function(dt) {
     
     size <- dt[date == rebalance_date, .(permno, rebalance_date, market_equity, log_market_equity)]
     size[, `:=`(rebalance_date, rebalance_date + years(1))]
-    setnames(size, c("market_equity", "log_market_equity"), c("size", "log_size"))
+    setnames(size, c("market_equity", "log_market_equity"), c("exp_size", "size"))
     dt <- merge(dt, size, by = c("rebalance_date", "permno"), all.x = TRUE)
     
     return(dt)
